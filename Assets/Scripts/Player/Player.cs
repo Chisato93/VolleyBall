@@ -2,15 +2,19 @@ using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(PlayerInputManager))]
+[RequireComponent(typeof(PlayerActionController))]
 public class Player : MonoBehaviour
 {
     private PlayerMovement movement;
     private PlayerInputManager input;
+    private PlayerActionController actionController;
 
     private void Awake()
     {
         movement = GetComponent<PlayerMovement>();
         input = GetComponent<PlayerInputManager>();
+        actionController = GetComponent<PlayerActionController>();
+
     }
 
     private void Update()
@@ -20,6 +24,11 @@ public class Player : MonoBehaviour
         if (input.JumpPressed)
         {
             movement.Jump();
+        }
+
+        if (input.ActionQPressed)
+        {
+            actionController.HandleActionQ();
         }
     }
 }
