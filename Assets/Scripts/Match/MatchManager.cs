@@ -15,6 +15,9 @@ public class MatchManager : MonoBehaviour
     public int OpponentScore { get; private set; }
     public int TargetScore => targetScore;
 
+    private TeamSide lastAttackTeam;
+    private bool hasLastAttackTeam;
+
     private void Start()
     {
         if (CurrentState == MatchState.None)
@@ -36,6 +39,7 @@ public class MatchManager : MonoBehaviour
         CurrentTouchTeam = servingTeam;
         ReceivingTeam = GetOppositeTeam(servingTeam);
         CurrentTouchCount = 0;
+        hasLastAttackTeam = false;
         ChangeState(MatchState.ServeReady);
     }
 
@@ -79,7 +83,23 @@ public class MatchManager : MonoBehaviour
             return false;
         }
 
+        if (action == BallTouchAction.Spike)
+        {
+            lastAttackTeam = team;
+            hasLastAttackTeam = true;
+        }
+
         return true;
+    }
+
+    public void RegisterAttackLanding(bool isIn)
+    {
+        if (CurrentState != MatchState.Rally || !hasLastAttackTeam)
+        {
+            return;
+        }
+
+        ScorePoint(isIn ? lastAttackTeam : GetOppositeTeam(lastAttackTeam));
     }
 
     public void RegisterNetCross(TeamSide fromTeam, TeamSide toTeam)
@@ -150,6 +170,7 @@ public class MatchManager : MonoBehaviour
         GUILayout.Label($"Serving: {servingTeam}");
         GUILayout.Label($"Receiving: {ReceivingTeam}");
         GUILayout.Label($"Touch: {CurrentTouchTeam} x {CurrentTouchCount}");
+        GUILayout.Label($"Last Attack: {(hasLastAttackTeam ? lastAttackTeam.ToString() : "None")}");
 
         if (GUILayout.Button("Next"))
         {
