@@ -10,6 +10,11 @@ public class PlayerActionController : MonoBehaviour
     [SerializeField] private float serveUpSpeed = 4f;
     [SerializeField] private Vector3 serveSpawnOffset = new Vector3(0f, 1.2f, 1f);
     [SerializeField] private float spikeRange = 2f;
+    [SerializeField] private float minSpikeHeight = 2f;
+    [SerializeField] private float maxSpikeHeight = 6f;
+    [SerializeField] private float spikeForwardSpeed = 8f;
+    [SerializeField] private float spikeDownSpeed = 3f;
+    [SerializeField] private float spikeCooldown = 0.75f;
     [SerializeField] private float receiveRange = 1.5f;
     [SerializeField] private float maxReceiveHeight = 2.5f;
     [SerializeField] private float receiveForwardSpeed = 5f;
@@ -30,6 +35,7 @@ public class PlayerActionController : MonoBehaviour
     private CharacterRole characterRole;
     private float nextReceiveTime;
     private float nextSetTime;
+    private float nextSpikeTime;
 
     private void Awake()
     {
@@ -170,12 +176,10 @@ public class PlayerActionController : MonoBehaviour
 
     private bool TrySpike()
     {
-        // TODO: 공격 턴인지 확인한다.
-        // TODO: 공이 높은 상태인지 확인한다.
-        // TODO: 실제 스파이크 동작은 타격 지점 선택이 끝난 뒤 실행한다.
         EnsureReferences();
 
-        if (ball == null || spikeTargetingController == null)
+        TeamSide currentTeamSide = GetTeamSide();
+        if (ball == null)
         {
             return false;
         }
@@ -185,13 +189,35 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
+        if (matchManager.CurrentTouchTeam != currentTeamSide || matchManager.ReceivingTeam != currentTeamSide)
+        {
+            return false;
+        }
+
+        if (matchManager.CurrentTouchCount != 2)
+        {
+            return false;
+        }
+
+        if (Time.time < nextSpikeTime || ball.position.y < minSpikeHeight || ball.position.y > maxSpikeHeight)
+        {
+            return false;
+        }
+
         if (!IsBallInSpikeRange())
         {
             return false;
         }
 
-        matchManager.RegisterTouch(GetTeamSide(), BallTouchAction.Spike);
-        spikeTargetingController.EnterTargetingMode();
+        Rigidbody ballBody = GetBallRigidbody();
+        if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Spike))
+        {
+            return false;
+        }
+
+        ballBody.linearVelocity = GetAttackDirection(currentTeamSide) * spikeForwardSpeed + Vector3.down * spikeDownSpeed;
+        ballBody.angularVelocity = Vector3.zero;
+        nextSpikeTime = Time.time + spikeCooldown;
         return true;
     }
 
@@ -251,7 +277,7 @@ public class PlayerActionController : MonoBehaviour
             targetBall = ballObject != null ? ballObject.transform : null;
         }
 
-        return targetBall != null && Vector3.Distance(transform.position, targetBall.position) <= spikeRange;
+        return targetBall != null && GetXzDistance(transform.position, targetBall.position) <= spikeRange;
     }
 
     private bool CanUseRallyAction()
@@ -272,6 +298,11 @@ public class PlayerActionController : MonoBehaviour
     }
 
     private static Vector3 GetReceiveDirection(TeamSide currentTeamSide)
+    {
+        return currentTeamSide == TeamSide.Opponent ? Vector3.back : Vector3.forward;
+    }
+
+    private static Vector3 GetAttackDirection(TeamSide currentTeamSide)
     {
         return currentTeamSide == TeamSide.Opponent ? Vector3.back : Vector3.forward;
     }

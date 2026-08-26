@@ -1806,6 +1806,8 @@ GameObject:
   - component: {fileID: 1455634435}
   - component: {fileID: 1455634436}
   - component: {fileID: 1455634437}
+  - component: {fileID: 1455634438}
+  - component: {fileID: 1455634439}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1927,6 +1929,48 @@ MonoBehaviour:
   setUpSpeed: 6
   setCooldown: 0.75
   setNetFrontDistance: 1.5
+--- !u!114 &1455634438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455634431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c2842e09d12477fbdc28821d151b1de, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TeamSpikeController
+  controlledTeam: 1
+  moveSpeed: 5
+  trackingRange: 12
+  spikeRange: 2
+  minSpikeHeight: 2
+  maxSpikeHeight: 6
+  spikeForwardSpeed: 8
+  spikeDownSpeed: 3
+  spikeCooldown: 0.75
+--- !u!114 &1455634439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455634431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c2842e09d12477fbdc28821d151b1de, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TeamSpikeController
+  controlledTeam: 0
+  moveSpeed: 5
+  trackingRange: 12
+  spikeRange: 2
+  minSpikeHeight: 2
+  maxSpikeHeight: 6
+  spikeForwardSpeed: 8
+  spikeDownSpeed: 3
+  spikeCooldown: 0.75
 --- !u!1 &1524293731
 GameObject:
   m_ObjectHideFlags: 0
