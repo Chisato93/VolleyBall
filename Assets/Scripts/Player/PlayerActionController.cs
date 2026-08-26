@@ -15,6 +15,8 @@ public class PlayerActionController : MonoBehaviour
     [SerializeField] private Color spikeReadyColor = new Color(0f, 1f, 0.25f, 0.9f);
     [SerializeField] private SpikeTargetingController spikeTargetingController;
 
+    private CharacterRole characterRole;
+
     private void Awake()
     {
         EnsureReferences();
@@ -25,6 +27,11 @@ public class PlayerActionController : MonoBehaviour
         if (spikeTargetingController == null)
         {
             spikeTargetingController = GetComponent<SpikeTargetingController>();
+        }
+
+        if (characterRole == null)
+        {
+            characterRole = GetComponent<CharacterRole>();
         }
 
         if (ball == null)
@@ -72,7 +79,7 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        return matchManager.RegisterTouch(teamSide, BallTouchAction.Receive);
+        return matchManager.RegisterTouch(GetTeamSide(), BallTouchAction.Receive);
     }
 
     private bool TrySet()
@@ -103,7 +110,7 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        matchManager.RegisterTouch(teamSide, BallTouchAction.Spike);
+        matchManager.RegisterTouch(GetTeamSide(), BallTouchAction.Spike);
         spikeTargetingController.EnterTargetingMode();
         return true;
     }
@@ -119,7 +126,8 @@ public class PlayerActionController : MonoBehaviour
         // TODO: 서브 위치일 때 Serve를 실행한다.
         EnsureReferences();
 
-        if (matchManager == null || !matchManager.CanServe(teamSide))
+        TeamSide currentTeamSide = GetTeamSide();
+        if (matchManager == null || !matchManager.CanServe(currentTeamSide))
         {
             return false;
         }
@@ -140,7 +148,7 @@ public class PlayerActionController : MonoBehaviour
         ballBody.angularVelocity = Vector3.zero;
         ballBody.linearVelocity = transform.forward * serveForwardSpeed + Vector3.up * serveUpSpeed;
 
-        return matchManager.RegisterTouch(teamSide, BallTouchAction.Serve);
+        return matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Serve);
     }
 
     private void OnDrawGizmos()
@@ -176,5 +184,10 @@ public class PlayerActionController : MonoBehaviour
     {
         EnsureReferences();
         return ball != null ? ball.GetComponent<Rigidbody>() : null;
+    }
+
+    private TeamSide GetTeamSide()
+    {
+        return characterRole != null ? characterRole.TeamSide : teamSide;
     }
 }

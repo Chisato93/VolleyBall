@@ -4,7 +4,8 @@ public enum POSITION
     OppositeHitter,             // OP
     MiddleBlocker,              // MB
     Setter,                     // S
-    Libero                      // L
+    Libero,                     // L
+    DefensiveSpecialist         // DS
 }
 
 public enum MatchState

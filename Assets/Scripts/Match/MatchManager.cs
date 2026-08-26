@@ -8,6 +8,7 @@ public class MatchManager : MonoBehaviour
 
     public MatchState CurrentState { get; private set; } = MatchState.None;
     public TeamSide ServingTeam => servingTeam;
+    public TeamSide ReceivingTeam { get; private set; } = TeamSide.Opponent;
     public TeamSide CurrentTouchTeam { get; private set; }
     public int CurrentTouchCount { get; private set; }
     public int PlayerScore { get; private set; }
@@ -33,6 +34,7 @@ public class MatchManager : MonoBehaviour
     public void StartServe()
     {
         CurrentTouchTeam = servingTeam;
+        ReceivingTeam = GetOppositeTeam(servingTeam);
         CurrentTouchCount = 0;
         ChangeState(MatchState.ServeReady);
     }
@@ -45,6 +47,7 @@ public class MatchManager : MonoBehaviour
         }
 
         CurrentTouchTeam = team;
+        ReceivingTeam = GetOppositeTeam(team);
         CurrentTouchCount = 1;
         ChangeState(MatchState.Rally);
         return true;
@@ -77,6 +80,21 @@ public class MatchManager : MonoBehaviour
         }
 
         return true;
+    }
+
+    public void RegisterNetCross(TeamSide fromTeam, TeamSide toTeam)
+    {
+        if (CurrentState != MatchState.Rally)
+        {
+            return;
+        }
+
+        if (CurrentTouchTeam != fromTeam)
+        {
+            return;
+        }
+
+        ReceivingTeam = toTeam;
     }
 
     public void ScorePoint(TeamSide scoringTeam)
@@ -130,6 +148,7 @@ public class MatchManager : MonoBehaviour
         GUILayout.Label($"State: {CurrentState}");
         GUILayout.Label($"Score: Player {PlayerScore} - {OpponentScore} Opponent");
         GUILayout.Label($"Serving: {servingTeam}");
+        GUILayout.Label($"Receiving: {ReceivingTeam}");
         GUILayout.Label($"Touch: {CurrentTouchTeam} x {CurrentTouchCount}");
 
         if (GUILayout.Button("Next"))
