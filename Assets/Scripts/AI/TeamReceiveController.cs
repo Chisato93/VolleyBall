@@ -94,6 +94,11 @@ public class TeamReceiveController : MonoBehaviour
                 continue;
             }
 
+            if (controlledTeam == TeamSide.Player && role.GetComponent<Player>() != null)
+            {
+                continue;
+            }
+
             float distance = GetXzDistance(role.transform.position, ball.position);
             if (distance <= nearestDistance)
             {
