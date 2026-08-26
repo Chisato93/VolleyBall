@@ -6,6 +6,9 @@ public class PlayerActionController : MonoBehaviour
     [SerializeField] private Transform ball;
     [SerializeField] private MatchManager matchManager;
     [SerializeField] private TeamSide teamSide = TeamSide.Player;
+    [SerializeField] private float serveForwardSpeed = 8f;
+    [SerializeField] private float serveUpSpeed = 4f;
+    [SerializeField] private Vector3 serveSpawnOffset = new Vector3(0f, 1.2f, 1f);
     [SerializeField] private float spikeRange = 2f;
     [SerializeField] private bool showSpikeRange = true;
     [SerializeField] private Color spikeRangeColor = new Color(0f, 0.75f, 1f, 0.7f);
@@ -121,6 +124,22 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
+        Rigidbody ballBody = GetBallRigidbody();
+        if (ballBody == null)
+        {
+            return false;
+        }
+
+        Vector3 spawnPosition = transform.position
+            + transform.right * serveSpawnOffset.x
+            + Vector3.up * serveSpawnOffset.y
+            + transform.forward * serveSpawnOffset.z;
+
+        ballBody.position = spawnPosition;
+        ballBody.linearVelocity = Vector3.zero;
+        ballBody.angularVelocity = Vector3.zero;
+        ballBody.linearVelocity = transform.forward * serveForwardSpeed + Vector3.up * serveUpSpeed;
+
         return matchManager.RegisterTouch(teamSide, BallTouchAction.Serve);
     }
 
@@ -151,5 +170,11 @@ public class PlayerActionController : MonoBehaviour
     {
         EnsureReferences();
         return matchManager != null && matchManager.CanPlayRallyAction();
+    }
+
+    private Rigidbody GetBallRigidbody()
+    {
+        EnsureReferences();
+        return ball != null ? ball.GetComponent<Rigidbody>() : null;
     }
 }
