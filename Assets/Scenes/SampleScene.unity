@@ -561,13 +561,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 18, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1803,6 +1803,9 @@ GameObject:
   - component: {fileID: 1455634432}
   - component: {fileID: 1455634433}
   - component: {fileID: 1455634434}
+  - component: {fileID: 1455634435}
+  - component: {fileID: 1455634436}
+  - component: {fileID: 1455634437}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1860,6 +1863,70 @@ MonoBehaviour:
   receiveForwardSpeed: 5
   receiveUpSpeed: 4
   receiveCooldown: 0.75
+--- !u!114 &1455634435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455634431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87a71d14399348f38a5b3660de9002de, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TeamReceiveController
+  controlledTeam: 0
+  moveSpeed: 4
+  trackingRange: 12
+  receiveRange: 1.5
+  maxReceiveHeight: 2.5
+  receiveForwardSpeed: 5
+  receiveUpSpeed: 4
+  receiveCooldown: 0.75
+--- !u!114 &1455634436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455634431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fab459555574f5fbc61b5800a35b0de, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TeamSetController
+  controlledTeam: 1
+  moveSpeed: 4
+  trackingRange: 12
+  setRange: 2
+  minSetHeight: 1
+  maxSetHeight: 5
+  setForwardSpeed: 3
+  setUpSpeed: 6
+  setCooldown: 0.75
+  setNetFrontDistance: 1.5
+--- !u!114 &1455634437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455634431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fab459555574f5fbc61b5800a35b0de, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TeamSetController
+  controlledTeam: 0
+  moveSpeed: 4
+  trackingRange: 12
+  setRange: 2
+  minSetHeight: 1
+  maxSetHeight: 5
+  setForwardSpeed: 3
+  setUpSpeed: 6
+  setCooldown: 0.75
+  setNetFrontDistance: 1.5
 --- !u!1 &1524293731
 GameObject:
   m_ObjectHideFlags: 0
