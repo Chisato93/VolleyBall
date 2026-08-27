@@ -4,6 +4,8 @@ using UnityEngine;
 public class PlayerActionController : MonoBehaviour
 {
     [SerializeField] private Transform ball;
+    [SerializeField] private MatchManager matchManager;
+    [SerializeField] private TeamSide teamSide = TeamSide.Player;
     [SerializeField] private float spikeRange = 2f;
     [SerializeField] private bool showSpikeRange = true;
     [SerializeField] private Color spikeRangeColor = new Color(0f, 0.75f, 1f, 0.7f);
@@ -27,6 +29,11 @@ public class PlayerActionController : MonoBehaviour
             GameObject ballObject = GameObject.Find("volleyball");
             ball = ballObject != null ? ballObject.transform : null;
         }
+
+        if (matchManager == null)
+        {
+            matchManager = FindFirstObjectByType<MatchManager>();
+        }
     }
 
     public void HandleActionQ()
@@ -36,7 +43,7 @@ public class PlayerActionController : MonoBehaviour
             return;
         }
 
-        if (TryBlock())
+        if (TrySpike())
         {
             return;
         }
@@ -51,13 +58,18 @@ public class PlayerActionController : MonoBehaviour
             return;
         }
 
-        TrySpike();
+        TryBlock();
     }
 
     private bool TryReceive()
     {
         // TODO: 공이 낮으며, 수비 상황일 때 Receive를 실행한다.
-        return false;
+        if (!CanUseRallyAction())
+        {
+            return false;
+        }
+
+        return matchManager.RegisterTouch(teamSide, BallTouchAction.Receive);
     }
 
     private bool TrySet()
@@ -78,11 +90,17 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
+        if (!CanUseRallyAction())
+        {
+            return false;
+        }
+
         if (!IsBallInSpikeRange())
         {
             return false;
         }
 
+        matchManager.RegisterTouch(teamSide, BallTouchAction.Spike);
         spikeTargetingController.EnterTargetingMode();
         return true;
     }
@@ -96,7 +114,14 @@ public class PlayerActionController : MonoBehaviour
     private bool TryServe()
     {
         // TODO: 서브 위치일 때 Serve를 실행한다.
-        return false;
+        EnsureReferences();
+
+        if (matchManager == null || !matchManager.CanServe(teamSide))
+        {
+            return false;
+        }
+
+        return matchManager.RegisterTouch(teamSide, BallTouchAction.Serve);
     }
 
     private void OnDrawGizmos()
@@ -120,5 +145,11 @@ public class PlayerActionController : MonoBehaviour
         }
 
         return targetBall != null && Vector3.Distance(transform.position, targetBall.position) <= spikeRange;
+    }
+
+    private bool CanUseRallyAction()
+    {
+        EnsureReferences();
+        return matchManager != null && matchManager.CanPlayRallyAction();
     }
 }

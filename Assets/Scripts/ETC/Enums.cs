@@ -6,3 +6,28 @@ public enum POSITION
     Setter,                     // S
     Libero                      // L
 }
+
+public enum MatchState
+{
+    None,
+    Ready,
+    ServeReady,
+    Rally,
+    PointScored,
+    MatchOver
+}
+
+public enum TeamSide
+{
+    Player,
+    Opponent
+}
+
+public enum BallTouchAction
+{
+    Serve,
+    Receive,
+    Set,
+    Spike,
+    Block
+}
