@@ -5,6 +5,7 @@ public class MatchManager : MonoBehaviour
     [SerializeField] private int targetScore = 11;
     [SerializeField] private TeamSide servingTeam = TeamSide.Player;
     [SerializeField] private bool showDebugGui = true;
+    [SerializeField] private CareerCalendarManager careerCalendarManager;
 
     public MatchState CurrentState { get; private set; } = MatchState.None;
     public TeamSide ServingTeam => servingTeam;
@@ -17,9 +18,20 @@ public class MatchManager : MonoBehaviour
 
     private TeamSide lastAttackTeam;
     private bool hasLastAttackTeam;
+    private bool hasAdvancedCareerCalendar;
 
     private void Start()
     {
+        if (careerCalendarManager == null)
+        {
+            careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
+        }
+
+        if (careerCalendarManager == null)
+        {
+            careerCalendarManager = new GameObject("CareerCalendarManager").AddComponent<CareerCalendarManager>();
+        }
+
         if (CurrentState == MatchState.None)
         {
             StartMatch();
@@ -31,6 +43,7 @@ public class MatchManager : MonoBehaviour
         PlayerScore = 0;
         OpponentScore = 0;
         servingTeam = TeamSide.Player;
+        hasAdvancedCareerCalendar = false;
         StartServe();
     }
 
@@ -134,7 +147,14 @@ public class MatchManager : MonoBehaviour
         }
 
         servingTeam = scoringTeam;
-        ChangeState(IsMatchOver() ? MatchState.MatchOver : MatchState.PointScored);
+        bool isMatchOver = IsMatchOver();
+        ChangeState(isMatchOver ? MatchState.MatchOver : MatchState.PointScored);
+
+        if (isMatchOver && !hasAdvancedCareerCalendar)
+        {
+            hasAdvancedCareerCalendar = true;
+            careerCalendarManager.AdvanceAfterMatch();
+        }
     }
 
     public void ResetRally()
@@ -164,13 +184,18 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        GUILayout.BeginArea(new Rect(10f, 10f, 220f, 220f), GUI.skin.box);
+        GUILayout.BeginArea(new Rect(10f, 10f, 220f, 260f), GUI.skin.box);
         GUILayout.Label($"State: {CurrentState}");
         GUILayout.Label($"Score: Player {PlayerScore} - {OpponentScore} Opponent");
         GUILayout.Label($"Serving: {servingTeam}");
         GUILayout.Label($"Receiving: {ReceivingTeam}");
         GUILayout.Label($"Touch: {CurrentTouchTeam} x {CurrentTouchCount}");
         GUILayout.Label($"Last Attack: {(hasLastAttackTeam ? lastAttackTeam.ToString() : "None")}");
+
+        if (careerCalendarManager != null)
+        {
+            GUILayout.Label($"Career: Year {careerCalendarManager.CurrentYear} / Month {careerCalendarManager.CurrentMonth}");
+        }
 
         if (GUILayout.Button("Next"))
         {
@@ -190,6 +215,11 @@ public class MatchManager : MonoBehaviour
         if (GUILayout.Button("Restart Match"))
         {
             StartMatch();
+        }
+
+        if (careerCalendarManager != null && GUILayout.Button("Reset Career"))
+        {
+            careerCalendarManager.ResetCareerCalendar();
         }
 
         GUILayout.EndArea();
