@@ -42,10 +42,8 @@ public class TrainingSelectionUI : MonoBehaviour
     [SerializeField] private GameObject resultContainer;
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button resultCloseButton;
-    [SerializeField] private int maxActionPoints = 3;
 
-    private MatchManager matchManager;
-    private int remainingActionPoints;
+    private GameFlowManager gameFlowManager;
 
     private void Awake()
     {
@@ -59,10 +57,9 @@ public class TrainingSelectionUI : MonoBehaviour
         Hide();
     }
 
-    public void StartTrainingPhase(MatchManager owner)
+    public void StartTrainingAction(GameFlowManager owner)
     {
-        matchManager = owner;
-        remainingActionPoints = Mathf.Max(0, maxActionPoints);
+        gameFlowManager = owner;
         ShowRandomOptions();
     }
 
@@ -102,9 +99,10 @@ public class TrainingSelectionUI : MonoBehaviour
     {
         TrainingResult result = ApplyTraining(trainingName);
 
-        if (result.Success && remainingActionPoints > 0)
+        if (result.Success && gameFlowManager != null)
         {
-            remainingActionPoints--;
+            result.RemainingActionPoints = gameFlowManager.ConsumeActionPoint();
+            result.MaxActionPoints = gameFlowManager.MaxActionPoints;
         }
 
         ShowResult(result);
@@ -145,23 +143,17 @@ public class TrainingSelectionUI : MonoBehaviour
         }
 
         resultText.text = result.Success
-            ? $"{result.TrainingName} 완료!\n{result.StatType} +{result.Increase}\n{result.BeforeValue} -> {result.AfterValue}\n남은 행동력: {remainingActionPoints} / {maxActionPoints}"
+            ? $"{result.TrainingName} 완료!\n{result.StatType} +{result.Increase}\n{result.BeforeValue} -> {result.AfterValue}\n남은 행동력: {result.RemainingActionPoints} / {result.MaxActionPoints}"
             : "플레이어 스탯을 찾지 못했습니다.";
     }
 
     private void HandleResultClose()
     {
-        if (remainingActionPoints > 0)
-        {
-            ShowRandomOptions();
-            return;
-        }
-
         Hide();
 
-        if (matchManager != null)
+        if (gameFlowManager != null)
         {
-            matchManager.StartMatch();
+            gameFlowManager.CompleteTrainingAction();
         }
     }
 
@@ -265,6 +257,8 @@ public class TrainingSelectionUI : MonoBehaviour
         public int Increase;
         public int BeforeValue;
         public int AfterValue;
+        public int RemainingActionPoints;
+        public int MaxActionPoints;
 
         public static TrainingResult Succeeded(
             string trainingName,

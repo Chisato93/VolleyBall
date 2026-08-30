@@ -18,11 +18,11 @@ MonoBehaviour:
   position: 0
   stats:
     Power: 68
-    Jump: 68
+    Jump: 71
     Receive: 57
-    Set: 51
+    Set: 53
     Block: 53
     Serve: 64
     Speed: 65
-    Stamina: 60
-    Mental: 64
+    Stamina: 61
+    Mental: 67

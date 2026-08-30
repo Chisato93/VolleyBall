@@ -159,7 +159,7 @@ public class TeamSpikeController : MonoBehaviour
             return;
         }
 
-        if (!matchManager.RegisterTouch(controlledTeam, BallTouchAction.Spike))
+        if (!matchManager.RegisterTouch(controlledTeam, BallTouchAction.Spike, currentAttacker))
         {
             return;
         }

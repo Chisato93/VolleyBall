@@ -160,7 +160,7 @@ public class TeamSetController : MonoBehaviour
             return;
         }
 
-        if (!matchManager.RegisterTouch(controlledTeam, BallTouchAction.Set))
+        if (!matchManager.RegisterTouch(controlledTeam, BallTouchAction.Set, currentSetter))
         {
             return;
         }

@@ -7,6 +7,7 @@ public class MatchManager : MonoBehaviour
     [SerializeField] private bool showDebugGui = true;
     [SerializeField] private CareerCalendarManager careerCalendarManager;
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
+    [SerializeField] private GameFlowManager gameFlowManager;
 
     public MatchState CurrentState { get; private set; } = MatchState.None;
     public TeamSide ServingTeam => servingTeam;
@@ -16,11 +17,14 @@ public class MatchManager : MonoBehaviour
     public int PlayerScore { get; private set; }
     public int OpponentScore { get; private set; }
     public int TargetScore => targetScore;
+    public MatchStats CurrentMatchStats => matchStats;
 
     private TeamSide lastAttackTeam;
+    private CharacterRole lastAttackActor;
     private bool hasLastAttackTeam;
     private bool hasAdvancedCareerCalendar;
     private bool hasShownTrainingSelection;
+    private readonly MatchStats matchStats = new MatchStats();
 
     private void Start()
     {
@@ -39,7 +43,12 @@ public class MatchManager : MonoBehaviour
             trainingSelectionUI = FindFirstObjectByType<TrainingSelectionUI>();
         }
 
-        if (CurrentState == MatchState.None)
+        if (gameFlowManager == null)
+        {
+            gameFlowManager = FindFirstObjectByType<GameFlowManager>();
+        }
+
+        if (CurrentState == MatchState.None && gameFlowManager == null)
         {
             StartMatch();
         }
@@ -52,6 +61,8 @@ public class MatchManager : MonoBehaviour
         servingTeam = TeamSide.Player;
         hasAdvancedCareerCalendar = false;
         hasShownTrainingSelection = false;
+        lastAttackActor = null;
+        matchStats.Reset();
         StartServe();
     }
 
@@ -61,10 +72,11 @@ public class MatchManager : MonoBehaviour
         ReceivingTeam = GetOppositeTeam(servingTeam);
         CurrentTouchCount = 0;
         hasLastAttackTeam = false;
+        lastAttackActor = null;
         ChangeState(MatchState.ServeReady);
     }
 
-    public bool BallServed(TeamSide team)
+    public bool BallServed(TeamSide team, CharacterRole actor = null)
     {
         if (CurrentState != MatchState.ServeReady || team != servingTeam)
         {
@@ -74,15 +86,16 @@ public class MatchManager : MonoBehaviour
         CurrentTouchTeam = team;
         ReceivingTeam = GetOppositeTeam(team);
         CurrentTouchCount = 1;
+        matchStats.RecordTouch(actor, BallTouchAction.Serve);
         ChangeState(MatchState.Rally);
         return true;
     }
 
-    public bool RegisterTouch(TeamSide team, BallTouchAction action)
+    public bool RegisterTouch(TeamSide team, BallTouchAction action, CharacterRole actor = null)
     {
         if (action == BallTouchAction.Serve)
         {
-            return BallServed(team);
+            return BallServed(team, actor);
         }
 
         if (CurrentState != MatchState.Rally)
@@ -97,6 +110,7 @@ public class MatchManager : MonoBehaviour
         }
 
         CurrentTouchCount++;
+        matchStats.RecordTouch(actor, action);
 
         if (CurrentTouchCount > 3)
         {
@@ -107,6 +121,7 @@ public class MatchManager : MonoBehaviour
         if (action == BallTouchAction.Spike)
         {
             lastAttackTeam = team;
+            lastAttackActor = actor;
             hasLastAttackTeam = true;
         }
 
@@ -120,6 +135,7 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
+        matchStats.RecordAttackResult(lastAttackActor, isIn);
         ScorePoint(isIn ? lastAttackTeam : GetOppositeTeam(lastAttackTeam));
     }
 
@@ -157,6 +173,7 @@ public class MatchManager : MonoBehaviour
         servingTeam = scoringTeam;
         bool isMatchOver = IsMatchOver();
         ChangeState(isMatchOver ? MatchState.MatchOver : MatchState.PointScored);
+        matchStats.SetFinalScore(PlayerScore, OpponentScore);
 
         if (isMatchOver && !hasAdvancedCareerCalendar)
         {
@@ -168,9 +185,13 @@ public class MatchManager : MonoBehaviour
         {
             hasShownTrainingSelection = true;
 
-            if (trainingSelectionUI != null)
+            if (gameFlowManager != null)
             {
-                trainingSelectionUI.StartTrainingPhase(this);
+                gameFlowManager.OnMatchEnded();
+            }
+            else if (trainingSelectionUI != null)
+            {
+                trainingSelectionUI.ShowRandomOptions();
             }
         }
     }

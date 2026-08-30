@@ -145,7 +145,7 @@ public class TeamReceiveController : MonoBehaviour
             return;
         }
 
-        if (!matchManager.RegisterTouch(controlledTeam, BallTouchAction.Receive))
+        if (!matchManager.RegisterTouch(controlledTeam, BallTouchAction.Receive, currentReceiver))
         {
             return;
         }

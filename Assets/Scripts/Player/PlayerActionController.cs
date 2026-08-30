@@ -117,7 +117,7 @@ public class PlayerActionController : MonoBehaviour
         }
 
         Rigidbody ballBody = GetBallRigidbody();
-        if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Receive))
+        if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Receive, characterRole))
         {
             return false;
         }
@@ -159,7 +159,7 @@ public class PlayerActionController : MonoBehaviour
         }
 
         Rigidbody ballBody = GetBallRigidbody();
-        if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Set))
+        if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Set, characterRole))
         {
             return false;
         }
@@ -210,7 +210,7 @@ public class PlayerActionController : MonoBehaviour
         }
 
         Rigidbody ballBody = GetBallRigidbody();
-        if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Spike))
+        if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Spike, characterRole))
         {
             return false;
         }
@@ -254,7 +254,7 @@ public class PlayerActionController : MonoBehaviour
         ballBody.angularVelocity = Vector3.zero;
         ballBody.linearVelocity = transform.forward * serveForwardSpeed + Vector3.up * serveUpSpeed;
 
-        return matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Serve);
+        return matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Serve, characterRole);
     }
 
     private void OnDrawGizmos()
