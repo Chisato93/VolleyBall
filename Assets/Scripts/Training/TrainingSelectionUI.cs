@@ -42,17 +42,28 @@ public class TrainingSelectionUI : MonoBehaviour
     [SerializeField] private GameObject resultContainer;
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button resultCloseButton;
+    [SerializeField] private int maxActionPoints = 3;
+
+    private MatchManager matchManager;
+    private int remainingActionPoints;
 
     private void Awake()
     {
         if (resultCloseButton != null)
         {
-            resultCloseButton.onClick.RemoveListener(Hide);
-            resultCloseButton.onClick.AddListener(Hide);
+            resultCloseButton.onClick.RemoveListener(HandleResultClose);
+            resultCloseButton.onClick.AddListener(HandleResultClose);
         }
 
         SetResultActive(false);
         Hide();
+    }
+
+    public void StartTrainingPhase(MatchManager owner)
+    {
+        matchManager = owner;
+        remainingActionPoints = Mathf.Max(0, maxActionPoints);
+        ShowRandomOptions();
     }
 
     public void ShowRandomOptions()
@@ -90,6 +101,12 @@ public class TrainingSelectionUI : MonoBehaviour
     private void SelectTraining(string trainingName)
     {
         TrainingResult result = ApplyTraining(trainingName);
+
+        if (result.Success && remainingActionPoints > 0)
+        {
+            remainingActionPoints--;
+        }
+
         ShowResult(result);
     }
 
@@ -128,8 +145,24 @@ public class TrainingSelectionUI : MonoBehaviour
         }
 
         resultText.text = result.Success
-            ? $"{result.TrainingName} 완료!\n{result.StatType} +{result.Increase}\n{result.BeforeValue} -> {result.AfterValue}"
+            ? $"{result.TrainingName} 완료!\n{result.StatType} +{result.Increase}\n{result.BeforeValue} -> {result.AfterValue}\n남은 행동력: {remainingActionPoints} / {maxActionPoints}"
             : "플레이어 스탯을 찾지 못했습니다.";
+    }
+
+    private void HandleResultClose()
+    {
+        if (remainingActionPoints > 0)
+        {
+            ShowRandomOptions();
+            return;
+        }
+
+        Hide();
+
+        if (matchManager != null)
+        {
+            matchManager.StartMatch();
+        }
     }
 
     private void SetOptionButtonsActive(bool isActive)

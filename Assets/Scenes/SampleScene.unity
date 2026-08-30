@@ -2942,6 +2942,7 @@ MonoBehaviour:
   resultContainer: {fileID: 4100000070}
   resultText: {fileID: 4100000075}
   resultCloseButton: {fileID: 4100000084}
+  maxActionPoints: 3
 --- !u!1 &4100000010
 GameObject:
   m_ObjectHideFlags: 0

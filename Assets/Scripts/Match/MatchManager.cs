@@ -170,7 +170,7 @@ public class MatchManager : MonoBehaviour
 
             if (trainingSelectionUI != null)
             {
-                trainingSelectionUI.ShowRandomOptions();
+                trainingSelectionUI.StartTrainingPhase(this);
             }
         }
     }

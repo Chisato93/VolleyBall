@@ -20,9 +20,9 @@ MonoBehaviour:
     Power: 68
     Jump: 68
     Receive: 57
-    Set: 48
-    Block: 52
+    Set: 51
+    Block: 53
     Serve: 64
     Speed: 65
     Stamina: 60
-    Mental: 61
+    Mental: 64
