@@ -17,11 +17,11 @@ MonoBehaviour:
   teamSide: 0
   position: 0
   stats:
-    Power: 65
-    Jump: 65
-    Receive: 55
-    Set: 45
-    Block: 45
+    Power: 66
+    Jump: 67
+    Receive: 57
+    Set: 48
+    Block: 48
     Serve: 60
     Speed: 65
     Stamina: 60

@@ -14,4 +14,12 @@ public class PlayerData : ScriptableObject
     public TeamSide TeamSide => teamSide;
     public POSITION Position => position;
     public PlayerStats Stats => stats;
+
+    public void SaveAssetIfEditor()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+        UnityEditor.AssetDatabase.SaveAssets();
+#endif
+    }
 }
