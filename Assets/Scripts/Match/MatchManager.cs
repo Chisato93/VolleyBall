@@ -6,6 +6,7 @@ public class MatchManager : MonoBehaviour
     [SerializeField] private TeamSide servingTeam = TeamSide.Player;
     [SerializeField] private bool showDebugGui = true;
     [SerializeField] private CareerCalendarManager careerCalendarManager;
+    [SerializeField] private TrainingSelectionUI trainingSelectionUI;
 
     public MatchState CurrentState { get; private set; } = MatchState.None;
     public TeamSide ServingTeam => servingTeam;
@@ -19,6 +20,7 @@ public class MatchManager : MonoBehaviour
     private TeamSide lastAttackTeam;
     private bool hasLastAttackTeam;
     private bool hasAdvancedCareerCalendar;
+    private bool hasShownTrainingSelection;
 
     private void Start()
     {
@@ -30,6 +32,11 @@ public class MatchManager : MonoBehaviour
         if (careerCalendarManager == null)
         {
             careerCalendarManager = new GameObject("CareerCalendarManager").AddComponent<CareerCalendarManager>();
+        }
+
+        if (trainingSelectionUI == null)
+        {
+            trainingSelectionUI = FindFirstObjectByType<TrainingSelectionUI>();
         }
 
         if (CurrentState == MatchState.None)
@@ -44,6 +51,7 @@ public class MatchManager : MonoBehaviour
         OpponentScore = 0;
         servingTeam = TeamSide.Player;
         hasAdvancedCareerCalendar = false;
+        hasShownTrainingSelection = false;
         StartServe();
     }
 
@@ -155,6 +163,16 @@ public class MatchManager : MonoBehaviour
             hasAdvancedCareerCalendar = true;
             careerCalendarManager.AdvanceAfterMatch();
         }
+
+        if (isMatchOver && !hasShownTrainingSelection)
+        {
+            hasShownTrainingSelection = true;
+
+            if (trainingSelectionUI != null)
+            {
+                trainingSelectionUI.ShowRandomOptions();
+            }
+        }
     }
 
     public void ResetRally()
@@ -184,7 +202,7 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        GUILayout.BeginArea(new Rect(10f, 10f, 220f, 260f), GUI.skin.box);
+        GUILayout.BeginArea(new Rect(10f, 10f, 220f, 290f), GUI.skin.box);
         GUILayout.Label($"State: {CurrentState}");
         GUILayout.Label($"Score: Player {PlayerScore} - {OpponentScore} Opponent");
         GUILayout.Label($"Serving: {servingTeam}");
@@ -212,6 +230,11 @@ public class MatchManager : MonoBehaviour
             ScorePoint(TeamSide.Opponent);
         }
 
+        if (GUILayout.Button("Force Match Over"))
+        {
+            ForceMatchOver();
+        }
+
         if (GUILayout.Button("Restart Match"))
         {
             StartMatch();
@@ -223,6 +246,21 @@ public class MatchManager : MonoBehaviour
         }
 
         GUILayout.EndArea();
+    }
+
+    private void ForceMatchOver()
+    {
+        if (CurrentState == MatchState.MatchOver)
+        {
+            return;
+        }
+
+        if (PlayerScore < targetScore - 1)
+        {
+            PlayerScore = targetScore - 1;
+        }
+
+        ScorePoint(TeamSide.Player);
     }
 
     private void GoToNextDebugStep()
