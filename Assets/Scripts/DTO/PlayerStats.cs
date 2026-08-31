@@ -11,6 +11,31 @@ public class PlayerStats
     public int Stamina;
     public int Mental;
 
+    public PlayerStats Clone()
+    {
+        PlayerStats clone = new PlayerStats();
+        clone.CopyFrom(this);
+        return clone;
+    }
+
+    public void CopyFrom(PlayerStats other)
+    {
+        if (other == null)
+        {
+            return;
+        }
+
+        Power = other.Power;
+        Jump = other.Jump;
+        Receive = other.Receive;
+        Set = other.Set;
+        Block = other.Block;
+        Serve = other.Serve;
+        Speed = other.Speed;
+        Stamina = other.Stamina;
+        Mental = other.Mental;
+    }
+
     public int GetValue(PlayerStatType statType)
     {
         switch (statType)

@@ -24,6 +24,8 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private MatchManager matchManager;
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
     [SerializeField] private WalletManager walletManager;
+    [SerializeField] private CareerCalendarManager careerCalendarManager;
+    [SerializeField] private TitleScreenUI titleScreenUI;
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button resultCloseButton;
@@ -60,8 +62,24 @@ public class GameFlowManager : MonoBehaviour
             walletManager = FindFirstObjectByType<WalletManager>();
         }
 
+        if (careerCalendarManager == null)
+        {
+            careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
+        }
+
+        if (titleScreenUI == null)
+        {
+            titleScreenUI = FindFirstObjectByType<TitleScreenUI>();
+        }
+
+        if (titleScreenUI == null)
+        {
+            titleScreenUI = gameObject.AddComponent<TitleScreenUI>();
+        }
+
         CreateMissingMainControls();
         CreateMissingResultPanel();
+        titleScreenUI.Initialize(this, GetUiRoot(), actionPointText);
 
         if (trainingActionButton != null)
         {
@@ -84,7 +102,7 @@ public class GameFlowManager : MonoBehaviour
 
     private void Start()
     {
-        StartMainPhase();
+        ShowTitleScreen();
     }
 
     public int ConsumeActionPoint()
@@ -109,6 +127,54 @@ public class GameFlowManager : MonoBehaviour
         ShowMatchResult();
     }
 
+    public void ContinueCareerFromTitle()
+    {
+        if (titleScreenUI != null)
+        {
+            titleScreenUI.Hide();
+        }
+
+        StartMainPhase();
+    }
+
+    public void StartNewCareerFromTitle()
+    {
+        ResetCareerSaveData();
+        ContinueCareerFromTitle();
+    }
+
+    public void QuitGameFromTitle()
+    {
+#if UNITY_EDITOR
+        Debug.Log("에디터에서는 종료 버튼이 게임을 닫지 않습니다.");
+#else
+        Application.Quit();
+#endif
+    }
+
+    private void ShowTitleScreen()
+    {
+        if (mainPanel != null)
+        {
+            mainPanel.SetActive(false);
+        }
+
+        if (trainingSelectionUI != null)
+        {
+            trainingSelectionUI.Hide();
+        }
+
+        SetResultPanelActive(false);
+
+        if (titleScreenUI != null)
+        {
+            titleScreenUI.Show();
+            return;
+        }
+
+        StartMainPhase();
+    }
+
     private void StartMainPhase()
     {
         remainingActionPoints = Mathf.Max(0, maxActionPoints);
@@ -117,6 +183,11 @@ public class GameFlowManager : MonoBehaviour
 
     private void ShowMainPanel()
     {
+        if (titleScreenUI != null)
+        {
+            titleScreenUI.Hide();
+        }
+
         if (trainingSelectionUI != null)
         {
             trainingSelectionUI.Hide();
@@ -534,6 +605,57 @@ public class GameFlowManager : MonoBehaviour
         if (resultPanel != null)
         {
             resultPanel.SetActive(isActive);
+        }
+    }
+
+    private Transform GetUiRoot()
+    {
+        if (mainPanel != null && mainPanel.transform.parent != null)
+        {
+            return mainPanel.transform.parent;
+        }
+
+        if (trainingSelectionUI != null)
+        {
+            return trainingSelectionUI.transform;
+        }
+
+        return null;
+    }
+
+    private void ResetCareerSaveData()
+    {
+        ResolveCareerManagers();
+
+        if (walletManager != null)
+        {
+            walletManager.ResetMoney();
+        }
+
+        if (careerCalendarManager != null)
+        {
+            careerCalendarManager.ResetCareerCalendar();
+        }
+
+        PlayerSaveManager.ResetSeasonCoachEvaluationScore();
+
+        CharacterRole[] characterRoles = FindObjectsByType<CharacterRole>(FindObjectsSortMode.None);
+        foreach (CharacterRole characterRole in characterRoles)
+        {
+            characterRole.ResetSavedStatsToDefault();
+        }
+    }
+
+    private void ResolveCareerManagers()
+    {
+        if (walletManager == null)
+        {
+            walletManager = FindFirstObjectByType<WalletManager>();
+        }
+
+        if (careerCalendarManager == null)
+        {
+            careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
         }
     }
 
