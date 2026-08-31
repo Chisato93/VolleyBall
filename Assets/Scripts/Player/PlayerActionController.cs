@@ -31,6 +31,7 @@ public class PlayerActionController : MonoBehaviour
     [SerializeField] private Color spikeRangeColor = new Color(0f, 0.75f, 1f, 0.7f);
     [SerializeField] private Color spikeReadyColor = new Color(0f, 1f, 0.25f, 0.9f);
     [SerializeField] private SpikeTargetingController spikeTargetingController;
+    [SerializeField] private PlayerCameraController playerCameraController;
 
     private CharacterRole characterRole;
     private float nextReceiveTime;
@@ -47,6 +48,11 @@ public class PlayerActionController : MonoBehaviour
         if (spikeTargetingController == null)
         {
             spikeTargetingController = GetComponent<SpikeTargetingController>();
+        }
+
+        if (playerCameraController == null)
+        {
+            playerCameraController = PlayerCameraController.FindSceneController(transform);
         }
 
         if (characterRole == null)
@@ -125,6 +131,7 @@ public class PlayerActionController : MonoBehaviour
         ballBody.linearVelocity = GetReceiveDirection(currentTeamSide) * receiveForwardSpeed + Vector3.up * receiveUpSpeed;
         ballBody.angularVelocity = Vector3.zero;
         nextReceiveTime = Time.time + receiveCooldown;
+        ShowActionCamera();
         return true;
     }
 
@@ -171,6 +178,7 @@ public class PlayerActionController : MonoBehaviour
         ballBody.linearVelocity = setDirection * setForwardSpeed + Vector3.up * setUpSpeed;
         ballBody.angularVelocity = Vector3.zero;
         nextSetTime = Time.time + setCooldown;
+        ShowActionCamera();
         return true;
     }
 
@@ -218,6 +226,7 @@ public class PlayerActionController : MonoBehaviour
         ballBody.linearVelocity = GetAttackDirection(currentTeamSide) * spikeForwardSpeed + Vector3.down * spikeDownSpeed;
         ballBody.angularVelocity = Vector3.zero;
         nextSpikeTime = Time.time + spikeCooldown;
+        ShowActionCamera();
         return true;
     }
 
@@ -254,7 +263,21 @@ public class PlayerActionController : MonoBehaviour
         ballBody.angularVelocity = Vector3.zero;
         ballBody.linearVelocity = transform.forward * serveForwardSpeed + Vector3.up * serveUpSpeed;
 
-        return matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Serve, characterRole);
+        bool served = matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Serve, characterRole);
+        if (served)
+        {
+            ShowActionCamera();
+        }
+
+        return served;
+    }
+
+    private void ShowActionCamera()
+    {
+        if (playerCameraController != null)
+        {
+            playerCameraController.UseActionCamera();
+        }
     }
 
     private void OnDrawGizmos()
