@@ -11,4 +11,12 @@ public class CharacterRole : MonoBehaviour
     public TeamSide TeamSide => playerData != null ? playerData.TeamSide : teamSide;
     public POSITION Position => playerData != null ? playerData.Position : position;
     public PlayerStats Stats => playerData != null ? playerData.Stats : fallbackStats;
+
+    private void Awake()
+    {
+        if (playerData != null && playerData.TeamSide == global::TeamSide.Player)
+        {
+            PlayerSaveManager.LoadPlayerStats(playerData);
+        }
+    }
 }

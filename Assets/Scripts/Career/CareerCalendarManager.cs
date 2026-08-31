@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class CareerCalendarManager : MonoBehaviour
 {
-    private const string CareerYearPrefsKey = "CareerCurrentYear";
-    private const string CareerMonthPrefsKey = "CareerCurrentMonth";
-
     [SerializeField] private int startingYear = 1;
     [SerializeField] private int startingMonth = 11;
 
@@ -40,17 +37,15 @@ public class CareerCalendarManager : MonoBehaviour
 
     private void LoadCareerCalendar()
     {
-        CurrentYear = Mathf.Max(1, PlayerPrefs.GetInt(CareerYearPrefsKey, startingYear));
+        CurrentYear = PlayerSaveManager.LoadCareerYear(startingYear);
 
-        int savedMonth = PlayerPrefs.GetInt(CareerMonthPrefsKey, startingMonth);
+        int savedMonth = PlayerSaveManager.LoadCareerMonth(startingMonth);
         CurrentMonth = IsSeasonMonth(savedMonth) ? savedMonth : 11;
     }
 
     private void SaveCareerCalendar()
     {
-        PlayerPrefs.SetInt(CareerYearPrefsKey, CurrentYear);
-        PlayerPrefs.SetInt(CareerMonthPrefsKey, CurrentMonth);
-        PlayerPrefs.Save();
+        PlayerSaveManager.SaveCareerDate(CurrentYear, CurrentMonth);
     }
 
     private static int GetNextMonth(int month)

@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class GameFlowManager : MonoBehaviour
 {
-    private const string SeasonCoachEvaluationScorePrefsKey = "SeasonCoachEvaluationScore";
     private const int WinEvaluationScore = 30;
     private const int LoseEvaluationScore = 10;
     private const int ScorePointEvaluationScore = 2;
@@ -240,7 +239,7 @@ public class GameFlowManager : MonoBehaviour
 
         stats.AddValue(PlayerStatType.Stamina, staminaIncrease, MaxStatValue);
         stats.AddValue(PlayerStatType.Mental, mentalIncrease, MaxStatValue);
-        playerData.SaveAssetIfEditor();
+        PlayerSaveManager.SavePlayerStats(playerData);
 
         result.Success = true;
         result.StaminaBefore = staminaBefore;
@@ -326,10 +325,7 @@ public class GameFlowManager : MonoBehaviour
         }
 
         lastMatchRewardResult = CalculateMatchReward();
-        int previousSeasonEvaluationScore = PlayerPrefs.GetInt(SeasonCoachEvaluationScorePrefsKey, 0);
-        lastMatchRewardResult.SeasonEvaluationScore = Mathf.Max(0, previousSeasonEvaluationScore + lastMatchRewardResult.MatchEvaluationScore);
-
-        PlayerPrefs.SetInt(SeasonCoachEvaluationScorePrefsKey, lastMatchRewardResult.SeasonEvaluationScore);
+        lastMatchRewardResult.SeasonEvaluationScore = PlayerSaveManager.AddSeasonCoachEvaluationScore(lastMatchRewardResult.MatchEvaluationScore);
 
         if (walletManager != null)
         {
@@ -342,7 +338,6 @@ public class GameFlowManager : MonoBehaviour
             Debug.LogWarning("WalletManager를 찾지 못해 출전 수당을 지급하지 못했습니다.");
         }
 
-        PlayerPrefs.Save();
         hasAppliedMatchReward = true;
     }
 

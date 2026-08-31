@@ -2,15 +2,13 @@ using UnityEngine;
 
 public class WalletManager : MonoBehaviour
 {
-    private const string MoneyPrefsKey = "PlayerOwnedMoney";
-
     [SerializeField] private int startingMoney;
 
     public int CurrentMoney { get; private set; }
 
     private void Awake()
     {
-        CurrentMoney = Mathf.Max(0, PlayerPrefs.GetInt(MoneyPrefsKey, startingMoney));
+        CurrentMoney = PlayerSaveManager.LoadMoney(startingMoney);
     }
 
     public void AddMoney(int amount)
@@ -43,8 +41,7 @@ public class WalletManager : MonoBehaviour
     public void SetMoney(int amount)
     {
         CurrentMoney = Mathf.Max(0, amount);
-        PlayerPrefs.SetInt(MoneyPrefsKey, CurrentMoney);
-        PlayerPrefs.Save();
+        PlayerSaveManager.SaveMoney(CurrentMoney);
     }
 
     public void ResetMoney()

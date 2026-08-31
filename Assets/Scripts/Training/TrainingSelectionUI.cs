@@ -122,7 +122,7 @@ public class TrainingSelectionUI : MonoBehaviour
         int beforeValue = stats.GetValue(statType);
 
         stats.AddValue(statType, amount, MaxStatValue);
-        playerData.SaveAssetIfEditor();
+        PlayerSaveManager.SavePlayerStats(playerData);
 
         int afterValue = stats.GetValue(statType);
         int actualIncrease = afterValue - beforeValue;
