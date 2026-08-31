@@ -5,6 +5,14 @@ using UnityEngine.UI;
 
 public class GameFlowManager : MonoBehaviour
 {
+    private const string SeasonCoachEvaluationScorePrefsKey = "SeasonCoachEvaluationScore";
+    private const int WinEvaluationScore = 30;
+    private const int LoseEvaluationScore = 10;
+    private const int ScorePointEvaluationScore = 2;
+    private const int AttackSuccessEvaluationScore = 2;
+    private const int AttackFailureEvaluationPenalty = 1;
+    private const int WinAllowance = 100;
+    private const int LoseAllowance = 30;
     private const int MinRestIncrease = 1;
     private const int MaxRestIncreaseExclusive = 4;
     private const int MaxStatValue = 99;
@@ -16,12 +24,15 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private Button restActionButton;
     [SerializeField] private MatchManager matchManager;
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
+    [SerializeField] private WalletManager walletManager;
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button resultCloseButton;
 
     private int remainingActionPoints;
     private ResultCloseAction resultCloseAction;
+    private bool hasAppliedMatchReward;
+    private MatchRewardResult lastMatchRewardResult;
 
     public int MaxActionPoints => maxActionPoints;
     public int RemainingActionPoints => remainingActionPoints;
@@ -43,6 +54,11 @@ public class GameFlowManager : MonoBehaviour
         if (trainingSelectionUI == null)
         {
             trainingSelectionUI = FindFirstObjectByType<TrainingSelectionUI>();
+        }
+
+        if (walletManager == null)
+        {
+            walletManager = FindFirstObjectByType<WalletManager>();
         }
 
         CreateMissingMainControls();
@@ -90,6 +106,7 @@ public class GameFlowManager : MonoBehaviour
 
     public void OnMatchEnded()
     {
+        ApplyMatchRewardIfNeeded();
         ShowMatchResult();
     }
 
@@ -135,6 +152,9 @@ public class GameFlowManager : MonoBehaviour
 
     private void StartMatchPhase()
     {
+        hasAppliedMatchReward = false;
+        lastMatchRewardResult = new MatchRewardResult();
+
         if (mainPanel != null)
         {
             mainPanel.SetActive(false);
@@ -274,8 +294,10 @@ public class GameFlowManager : MonoBehaviour
         int opponentScore = matchManager != null ? matchManager.OpponentScore : 0;
 
         StringBuilder builder = new StringBuilder();
-        builder.AppendLine(playerScore >= opponentScore ? "경기 승리!" : "경기 패배");
+        builder.AppendLine(playerScore > opponentScore ? "경기 승리!" : "경기 패배");
         builder.AppendLine($"점수: Player {playerScore} - {opponentScore} Opponent");
+        builder.AppendLine();
+        AppendMatchRewardText(builder, lastMatchRewardResult);
         builder.AppendLine();
         builder.AppendLine("선수별 기록");
 
@@ -294,6 +316,104 @@ public class GameFlowManager : MonoBehaviour
         }
 
         return builder.ToString();
+    }
+
+    private void ApplyMatchRewardIfNeeded()
+    {
+        if (hasAppliedMatchReward)
+        {
+            return;
+        }
+
+        lastMatchRewardResult = CalculateMatchReward();
+        int previousSeasonEvaluationScore = PlayerPrefs.GetInt(SeasonCoachEvaluationScorePrefsKey, 0);
+        lastMatchRewardResult.SeasonEvaluationScore = Mathf.Max(0, previousSeasonEvaluationScore + lastMatchRewardResult.MatchEvaluationScore);
+
+        PlayerPrefs.SetInt(SeasonCoachEvaluationScorePrefsKey, lastMatchRewardResult.SeasonEvaluationScore);
+
+        if (walletManager != null)
+        {
+            walletManager.AddMoney(lastMatchRewardResult.Allowance);
+            lastMatchRewardResult.CurrentMoney = walletManager.CurrentMoney;
+            lastMatchRewardResult.HasWallet = true;
+        }
+        else
+        {
+            Debug.LogWarning("WalletManager를 찾지 못해 출전 수당을 지급하지 못했습니다.");
+        }
+
+        PlayerPrefs.Save();
+        hasAppliedMatchReward = true;
+    }
+
+    private MatchRewardResult CalculateMatchReward()
+    {
+        MatchStats stats = matchManager != null ? matchManager.CurrentMatchStats : null;
+        int playerScore = matchManager != null ? matchManager.PlayerScore : 0;
+        int opponentScore = matchManager != null ? matchManager.OpponentScore : 0;
+        bool isWin = playerScore > opponentScore;
+        int attackSuccesses = 0;
+        int attackFailures = 0;
+
+        if (stats != null)
+        {
+            foreach (PlayerMatchStats playerStats in stats.PlayerStats)
+            {
+                if (playerStats.TeamSide != TeamSide.Player)
+                {
+                    continue;
+                }
+
+                attackSuccesses += playerStats.AttackSuccesses;
+                attackFailures += playerStats.AttackFailures;
+            }
+        }
+
+        int resultScore = isWin ? WinEvaluationScore : LoseEvaluationScore;
+        int scorePointScore = playerScore * ScorePointEvaluationScore;
+        int attackSuccessScore = attackSuccesses * AttackSuccessEvaluationScore;
+        int attackFailurePenalty = attackFailures * AttackFailureEvaluationPenalty;
+        int matchEvaluationScore = Mathf.Max(0, resultScore + scorePointScore + attackSuccessScore - attackFailurePenalty);
+
+        return new MatchRewardResult
+        {
+            IsWin = isWin,
+            ResultScore = resultScore,
+            ScorePointScore = scorePointScore,
+            AttackSuccessScore = attackSuccessScore,
+            AttackFailurePenalty = attackFailurePenalty,
+            MatchEvaluationScore = matchEvaluationScore,
+            Allowance = isWin ? WinAllowance : LoseAllowance
+        };
+    }
+
+    private static void AppendMatchRewardText(StringBuilder builder, MatchRewardResult rewardResult)
+    {
+        builder.AppendLine("감독 평가");
+        builder.AppendLine($"{(rewardResult.IsWin ? "승리" : "패배")} +{rewardResult.ResultScore}");
+        builder.AppendLine($"득점 기여 +{rewardResult.ScorePointScore}");
+        builder.AppendLine($"공격 성공 +{rewardResult.AttackSuccessScore}");
+
+        if (rewardResult.AttackFailurePenalty > 0)
+        {
+            builder.AppendLine($"공격 실패 -{rewardResult.AttackFailurePenalty}");
+        }
+
+        builder.AppendLine();
+        builder.AppendLine($"이번 경기 평가점: {rewardResult.MatchEvaluationScore}");
+        builder.AppendLine($"시즌 누적 평가점: {rewardResult.SeasonEvaluationScore}");
+        builder.AppendLine();
+        builder.AppendLine("출전 수당");
+        builder.AppendLine($"이번 경기 수당: {rewardResult.Allowance:N0}원");
+
+        if (rewardResult.HasWallet)
+        {
+            builder.AppendLine($"현재 보유 돈: {rewardResult.CurrentMoney:N0}원");
+        }
+        else
+        {
+            builder.AppendLine("현재 보유 돈: 지갑 정보를 찾지 못했습니다.");
+        }
     }
 
     private void HandleResultClose()
@@ -449,5 +569,19 @@ public class GameFlowManager : MonoBehaviour
         public int StaminaAfter;
         public int MentalBefore;
         public int MentalAfter;
+    }
+
+    private struct MatchRewardResult
+    {
+        public bool IsWin;
+        public bool HasWallet;
+        public int ResultScore;
+        public int ScorePointScore;
+        public int AttackSuccessScore;
+        public int AttackFailurePenalty;
+        public int MatchEvaluationScore;
+        public int SeasonEvaluationScore;
+        public int Allowance;
+        public int CurrentMoney;
     }
 }
