@@ -4,10 +4,34 @@ using UnityEngine.UI;
 
 public class TitleScreenUI : MonoBehaviour
 {
+    private const int StartingStatValue = 20;
+    private const int StartingBonusPoints = 10;
+    private const int InitialStatCap = 30;
+
+    private static readonly PlayerStatType[] StatTypes =
+    {
+        PlayerStatType.Power,
+        PlayerStatType.Jump,
+        PlayerStatType.Receive,
+        PlayerStatType.Set,
+        PlayerStatType.Block,
+        PlayerStatType.Serve,
+        PlayerStatType.Speed,
+        PlayerStatType.Stamina,
+        PlayerStatType.Mental
+    };
+
     private GameFlowManager gameFlowManager;
     private GameObject titlePanel;
     private GameObject positionPanel;
+    private GameObject allocationPanel;
     private TMP_Text fontSource;
+    private TMP_Text allocationTitleText;
+    private TMP_Text remainingPointText;
+    private Button startCareerButton;
+    private StatAllocationRow[] statRows;
+    private POSITION selectedPosition;
+    private PlayerStats allocatedStats = new PlayerStats();
 
     public void Initialize(GameFlowManager owner, Transform uiRoot, TMP_Text sourceText)
     {
@@ -23,6 +47,11 @@ public class TitleScreenUI : MonoBehaviour
         {
             CreatePositionPanel(uiRoot);
         }
+
+        if (allocationPanel == null)
+        {
+            CreateAllocationPanel(uiRoot);
+        }
     }
 
     public void Show()
@@ -37,6 +66,11 @@ public class TitleScreenUI : MonoBehaviour
         {
             positionPanel.SetActive(false);
         }
+
+        if (allocationPanel != null)
+        {
+            allocationPanel.SetActive(false);
+        }
     }
 
     public void Hide()
@@ -50,6 +84,11 @@ public class TitleScreenUI : MonoBehaviour
         {
             positionPanel.SetActive(false);
         }
+
+        if (allocationPanel != null)
+        {
+            allocationPanel.SetActive(false);
+        }
     }
 
     private void CreateTitlePanel(Transform uiRoot)
@@ -60,17 +99,7 @@ public class TitleScreenUI : MonoBehaviour
             return;
         }
 
-        titlePanel = new GameObject("TitleScreenPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        titlePanel.transform.SetParent(uiRoot, false);
-
-        RectTransform panelTransform = titlePanel.GetComponent<RectTransform>();
-        panelTransform.anchorMin = Vector2.zero;
-        panelTransform.anchorMax = Vector2.one;
-        panelTransform.offsetMin = Vector2.zero;
-        panelTransform.offsetMax = Vector2.zero;
-
-        Image panelImage = titlePanel.GetComponent<Image>();
-        panelImage.color = new Color(0.05f, 0.08f, 0.1f, 0.97f);
+        titlePanel = CreateFullscreenPanel(uiRoot, "TitleScreenPanel");
 
         TMP_Text titleText = CreateText("TitleText", "VOLLEYBALL", 72f, TextAlignmentOptions.Center);
         RectTransform titleTransform = titleText.GetComponent<RectTransform>();
@@ -100,17 +129,7 @@ public class TitleScreenUI : MonoBehaviour
             return;
         }
 
-        positionPanel = new GameObject("PositionSelectPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        positionPanel.transform.SetParent(uiRoot, false);
-
-        RectTransform panelTransform = positionPanel.GetComponent<RectTransform>();
-        panelTransform.anchorMin = Vector2.zero;
-        panelTransform.anchorMax = Vector2.one;
-        panelTransform.offsetMin = Vector2.zero;
-        panelTransform.offsetMax = Vector2.zero;
-
-        Image panelImage = positionPanel.GetComponent<Image>();
-        panelImage.color = new Color(0.05f, 0.08f, 0.1f, 0.97f);
+        positionPanel = CreateFullscreenPanel(uiRoot, "PositionSelectPanel");
 
         TMP_Text titleText = CreateText(positionPanel, "PositionTitleText", "포지션 선택", 54f, TextAlignmentOptions.Center);
         RectTransform titleTransform = titleText.GetComponent<RectTransform>();
@@ -137,6 +156,67 @@ public class TitleScreenUI : MonoBehaviour
         positionPanel.SetActive(false);
     }
 
+    private void CreateAllocationPanel(Transform uiRoot)
+    {
+        if (uiRoot == null)
+        {
+            return;
+        }
+
+        allocationPanel = CreateFullscreenPanel(uiRoot, "StatAllocationPanel");
+
+        allocationTitleText = CreateText(allocationPanel, "AllocationTitleText", "스탯 배분", 48f, TextAlignmentOptions.Center);
+        RectTransform titleTransform = allocationTitleText.GetComponent<RectTransform>();
+        titleTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        titleTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        titleTransform.anchoredPosition = new Vector2(0f, 276f);
+        titleTransform.sizeDelta = new Vector2(760f, 64f);
+
+        TMP_Text guideText = CreateText(allocationPanel, "AllocationGuideText", "기본 20에서 보너스 10포인트를 나눠주세요.", 23f, TextAlignmentOptions.Center);
+        RectTransform guideTransform = guideText.GetComponent<RectTransform>();
+        guideTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        guideTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        guideTransform.anchoredPosition = new Vector2(0f, 224f);
+        guideTransform.sizeDelta = new Vector2(860f, 42f);
+
+        remainingPointText = CreateText(allocationPanel, "RemainingPointText", string.Empty, 28f, TextAlignmentOptions.Center);
+        RectTransform remainingTransform = remainingPointText.GetComponent<RectTransform>();
+        remainingTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        remainingTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        remainingTransform.anchoredPosition = new Vector2(0f, 176f);
+        remainingTransform.sizeDelta = new Vector2(520f, 44f);
+
+        statRows = new StatAllocationRow[StatTypes.Length];
+        for (int i = 0; i < StatTypes.Length; i++)
+        {
+            int column = i % 3;
+            int row = i / 3;
+            Vector2 rowPosition = new Vector2(-300f + column * 300f, 92f - row * 92f);
+            statRows[i] = CreateStatAllocationRow(StatTypes[i], rowPosition);
+        }
+
+        startCareerButton = CreateButton(allocationPanel, "StartCareerButton", "시작", new Vector2(160f, -230f), HandleStartCareer);
+        CreateButton(allocationPanel, "AllocationBackButton", "뒤로", new Vector2(-160f, -230f), HandleBackFromAllocation);
+
+        allocationPanel.SetActive(false);
+    }
+
+    private GameObject CreateFullscreenPanel(Transform uiRoot, string objectName)
+    {
+        GameObject panel = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        panel.transform.SetParent(uiRoot, false);
+
+        RectTransform panelTransform = panel.GetComponent<RectTransform>();
+        panelTransform.anchorMin = Vector2.zero;
+        panelTransform.anchorMax = Vector2.one;
+        panelTransform.offsetMin = Vector2.zero;
+        panelTransform.offsetMax = Vector2.zero;
+
+        Image panelImage = panel.GetComponent<Image>();
+        panelImage.color = new Color(0.05f, 0.08f, 0.1f, 0.97f);
+        return panel;
+    }
+
     private TMP_Text CreateText(string objectName, string text, float fontSize, TextAlignmentOptions alignment)
     {
         return CreateText(titlePanel, objectName, text, fontSize, alignment);
@@ -152,7 +232,7 @@ public class TitleScreenUI : MonoBehaviour
         textComponent.color = Color.white;
         textComponent.fontSize = fontSize;
         textComponent.enableAutoSizing = true;
-        textComponent.fontSizeMin = 18f;
+        textComponent.fontSizeMin = 12f;
         textComponent.fontSizeMax = fontSize;
         textComponent.alignment = alignment;
 
@@ -170,7 +250,7 @@ public class TitleScreenUI : MonoBehaviour
         CreateButton(titlePanel, objectName, buttonText, anchoredPosition, action);
     }
 
-    private void CreateButton(GameObject parent, string objectName, string buttonText, Vector2 anchoredPosition, UnityEngine.Events.UnityAction action)
+    private Button CreateButton(GameObject parent, string objectName, string buttonText, Vector2 anchoredPosition, UnityEngine.Events.UnityAction action)
     {
         GameObject buttonObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
         buttonObject.transform.SetParent(parent.transform, false);
@@ -193,11 +273,67 @@ public class TitleScreenUI : MonoBehaviour
         textTransform.anchorMax = Vector2.one;
         textTransform.offsetMin = Vector2.zero;
         textTransform.offsetMax = Vector2.zero;
+
+        return button;
+    }
+
+    private Button CreateSmallButton(GameObject parent, string objectName, string buttonText, Vector2 anchoredPosition, UnityEngine.Events.UnityAction action)
+    {
+        Button button = CreateButton(parent, objectName, buttonText, anchoredPosition, action);
+
+        RectTransform buttonTransform = button.GetComponent<RectTransform>();
+        buttonTransform.sizeDelta = new Vector2(42f, 42f);
+
+        TMP_Text textComponent = button.GetComponentInChildren<TMP_Text>(true);
+        if (textComponent != null)
+        {
+            textComponent.fontSize = 26f;
+            textComponent.fontSizeMax = 26f;
+        }
+
+        return button;
     }
 
     private void CreatePositionButton(string objectName, string buttonText, POSITION position, Vector2 anchoredPosition)
     {
         CreateButton(positionPanel, objectName, buttonText, anchoredPosition, () => HandlePositionSelected(position));
+    }
+
+    private StatAllocationRow CreateStatAllocationRow(PlayerStatType statType, Vector2 anchoredPosition)
+    {
+        GameObject rowObject = new GameObject($"{statType}AllocationRow", typeof(RectTransform));
+        rowObject.transform.SetParent(allocationPanel.transform, false);
+
+        RectTransform rowTransform = rowObject.GetComponent<RectTransform>();
+        rowTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rowTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rowTransform.anchoredPosition = anchoredPosition;
+        rowTransform.sizeDelta = new Vector2(270f, 82f);
+
+        TMP_Text labelText = CreateText(rowObject, $"{statType}Label", GetStatLabel(statType), 22f, TextAlignmentOptions.Center);
+        RectTransform labelTransform = labelText.GetComponent<RectTransform>();
+        labelTransform.anchorMin = new Vector2(0.5f, 1f);
+        labelTransform.anchorMax = new Vector2(0.5f, 1f);
+        labelTransform.anchoredPosition = new Vector2(0f, -12f);
+        labelTransform.sizeDelta = new Vector2(150f, 30f);
+
+        TMP_Text valueText = CreateText(rowObject, $"{statType}Value", string.Empty, 18f, TextAlignmentOptions.Center);
+        RectTransform valueTransform = valueText.GetComponent<RectTransform>();
+        valueTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        valueTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        valueTransform.anchoredPosition = new Vector2(0f, -14f);
+        valueTransform.sizeDelta = new Vector2(150f, 48f);
+
+        Button minusButton = CreateSmallButton(rowObject, $"{statType}MinusButton", "-", new Vector2(-96f, -14f), () => ChangeAllocatedStat(statType, -1));
+        Button plusButton = CreateSmallButton(rowObject, $"{statType}PlusButton", "+", new Vector2(96f, -14f), () => ChangeAllocatedStat(statType, 1));
+
+        return new StatAllocationRow
+        {
+            StatType = statType,
+            ValueText = valueText,
+            MinusButton = minusButton,
+            PlusButton = plusButton
+        };
     }
 
     private void HandleContinue()
@@ -238,9 +374,116 @@ public class TitleScreenUI : MonoBehaviour
 
     private void HandlePositionSelected(POSITION position)
     {
+        selectedPosition = position;
+        allocatedStats = new PlayerStats();
+
+        if (positionPanel != null)
+        {
+            positionPanel.SetActive(false);
+        }
+
+        if (allocationPanel != null)
+        {
+            allocationPanel.SetActive(true);
+            allocationPanel.transform.SetAsLastSibling();
+        }
+
+        UpdateAllocationPanel();
+    }
+
+    private void ChangeAllocatedStat(PlayerStatType statType, int delta)
+    {
+        int currentAllocatedValue = allocatedStats.GetValue(statType);
+
+        if (delta > 0)
+        {
+            if (GetRemainingBonusPoints() <= 0 || StartingStatValue + currentAllocatedValue >= InitialStatCap)
+            {
+                return;
+            }
+
+            allocatedStats.SetValue(statType, currentAllocatedValue + 1);
+        }
+        else if (currentAllocatedValue > 0)
+        {
+            allocatedStats.SetValue(statType, currentAllocatedValue - 1);
+        }
+
+        UpdateAllocationPanel();
+    }
+
+    private void UpdateAllocationPanel()
+    {
+        if (allocationTitleText != null)
+        {
+            allocationTitleText.text = $"{GetPositionLabel(selectedPosition)} 스탯 배분";
+        }
+
+        if (remainingPointText != null)
+        {
+            remainingPointText.text = $"남은 포인트: {GetRemainingBonusPoints()} / {StartingBonusPoints}";
+        }
+
+        if (statRows != null)
+        {
+            foreach (StatAllocationRow row in statRows)
+            {
+                UpdateStatRow(row);
+            }
+        }
+
+        if (startCareerButton != null)
+        {
+            startCareerButton.interactable = GetRemainingBonusPoints() == 0;
+        }
+    }
+
+    private void UpdateStatRow(StatAllocationRow row)
+    {
+        int allocatedValue = allocatedStats.GetValue(row.StatType);
+        int positionBonus = GetPositionBonus(selectedPosition, row.StatType);
+        int currentValue = StartingStatValue + allocatedValue + positionBonus;
+
+        if (row.ValueText != null)
+        {
+            row.ValueText.text = $"{currentValue}\n배분 +{allocatedValue} / 포지션 +{positionBonus}";
+        }
+
+        if (row.MinusButton != null)
+        {
+            row.MinusButton.interactable = allocatedValue > 0;
+        }
+
+        if (row.PlusButton != null)
+        {
+            row.PlusButton.interactable = GetRemainingBonusPoints() > 0 && StartingStatValue + allocatedValue < InitialStatCap;
+        }
+    }
+
+    private void HandleBackFromAllocation()
+    {
+        if (allocationPanel != null)
+        {
+            allocationPanel.SetActive(false);
+        }
+
+        if (positionPanel != null)
+        {
+            positionPanel.SetActive(true);
+            positionPanel.transform.SetAsLastSibling();
+        }
+    }
+
+    private void HandleStartCareer()
+    {
+        if (GetRemainingBonusPoints() != 0)
+        {
+            return;
+        }
+
         if (gameFlowManager != null)
         {
-            gameFlowManager.StartNewCareerFromTitle(position);
+            gameFlowManager.StartNewCareerFromTitle(selectedPosition, allocatedStats.Clone());
         }
     }
 
@@ -250,5 +493,112 @@ public class TitleScreenUI : MonoBehaviour
         {
             gameFlowManager.QuitGameFromTitle();
         }
+    }
+
+    private int GetRemainingBonusPoints()
+    {
+        int usedPoints = 0;
+
+        foreach (PlayerStatType statType in StatTypes)
+        {
+            usedPoints += Mathf.Max(0, allocatedStats.GetValue(statType));
+        }
+
+        return Mathf.Max(0, StartingBonusPoints - usedPoints);
+    }
+
+    private static int GetPositionBonus(POSITION position, PlayerStatType statType)
+    {
+        switch (position)
+        {
+            case POSITION.OutsideHitter:
+                return statType == PlayerStatType.Power ? 4
+                    : statType == PlayerStatType.Jump ? 3
+                    : statType == PlayerStatType.Receive ? 3
+                    : 0;
+            case POSITION.OppositeHitter:
+                return statType == PlayerStatType.Power ? 5
+                    : statType == PlayerStatType.Serve ? 3
+                    : statType == PlayerStatType.Jump ? 3
+                    : 0;
+            case POSITION.MiddleBlocker:
+                return statType == PlayerStatType.Block ? 5
+                    : statType == PlayerStatType.Jump ? 4
+                    : statType == PlayerStatType.Power ? 3
+                    : 0;
+            case POSITION.Setter:
+                return statType == PlayerStatType.Set ? 5
+                    : statType == PlayerStatType.Mental ? 4
+                    : statType == PlayerStatType.Speed ? 3
+                    : 0;
+            case POSITION.Libero:
+                return statType == PlayerStatType.Receive ? 5
+                    : statType == PlayerStatType.Speed ? 4
+                    : statType == PlayerStatType.Mental ? 3
+                    : 0;
+            case POSITION.DefensiveSpecialist:
+                return statType == PlayerStatType.Receive ? 4
+                    : statType == PlayerStatType.Speed ? 4
+                    : statType == PlayerStatType.Stamina ? 3
+                    : 0;
+            default:
+                return 0;
+        }
+    }
+
+    private static string GetStatLabel(PlayerStatType statType)
+    {
+        switch (statType)
+        {
+            case PlayerStatType.Power:
+                return "파워";
+            case PlayerStatType.Jump:
+                return "점프";
+            case PlayerStatType.Receive:
+                return "리시브";
+            case PlayerStatType.Set:
+                return "토스";
+            case PlayerStatType.Block:
+                return "블록";
+            case PlayerStatType.Serve:
+                return "서브";
+            case PlayerStatType.Speed:
+                return "스피드";
+            case PlayerStatType.Stamina:
+                return "체력";
+            case PlayerStatType.Mental:
+                return "멘탈";
+            default:
+                return statType.ToString();
+        }
+    }
+
+    private static string GetPositionLabel(POSITION position)
+    {
+        switch (position)
+        {
+            case POSITION.OutsideHitter:
+                return "아웃사이드 히터";
+            case POSITION.OppositeHitter:
+                return "아포짓 히터";
+            case POSITION.MiddleBlocker:
+                return "미들 블로커";
+            case POSITION.Setter:
+                return "세터";
+            case POSITION.Libero:
+                return "리베로";
+            case POSITION.DefensiveSpecialist:
+                return "디펜시브 스페셜리스트";
+            default:
+                return position.ToString();
+        }
+    }
+
+    private struct StatAllocationRow
+    {
+        public PlayerStatType StatType;
+        public TMP_Text ValueText;
+        public Button MinusButton;
+        public Button PlusButton;
     }
 }

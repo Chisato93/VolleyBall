@@ -15,6 +15,22 @@ public class GameFlowManager : MonoBehaviour
     private const int MinRestIncrease = 1;
     private const int MaxRestIncreaseExclusive = 4;
     private const int MaxStatValue = 99;
+    private const int StartingStatValue = 20;
+    private const int StartingBonusPoints = 10;
+    private const int InitialStatCap = 30;
+
+    private static readonly PlayerStatType[] StartingStatTypes =
+    {
+        PlayerStatType.Power,
+        PlayerStatType.Jump,
+        PlayerStatType.Receive,
+        PlayerStatType.Set,
+        PlayerStatType.Block,
+        PlayerStatType.Serve,
+        PlayerStatType.Speed,
+        PlayerStatType.Stamina,
+        PlayerStatType.Mental
+    };
 
     [SerializeField] private int maxActionPoints = 3;
     [SerializeField] private GameObject mainPanel;
@@ -159,10 +175,16 @@ public class GameFlowManager : MonoBehaviour
         StartMainPhase();
     }
 
+    public void StartNewCareerFromTitle(POSITION selectedPosition, PlayerStats allocatedStats)
+    {
+        PlayerStats startingStats = BuildNewCareerStartingStats(selectedPosition, allocatedStats);
+        ResetCareerSaveData(selectedPosition, startingStats);
+        ContinueCareerFromTitle();
+    }
+
     public void StartNewCareerFromTitle(POSITION selectedPosition)
     {
-        ResetCareerSaveData(selectedPosition);
-        ContinueCareerFromTitle();
+        StartNewCareerFromTitle(selectedPosition, new PlayerStats());
     }
 
     public void QuitGameFromTitle()
@@ -791,7 +813,7 @@ public class GameFlowManager : MonoBehaviour
         return null;
     }
 
-    private void ResetCareerSaveData(POSITION selectedPosition)
+    private void ResetCareerSaveData(POSITION selectedPosition, PlayerStats startingStats)
     {
         ResolveCareerManagers();
 
@@ -811,8 +833,84 @@ public class GameFlowManager : MonoBehaviour
         CharacterRole[] characterRoles = FindObjectsByType<CharacterRole>(FindObjectsSortMode.None);
         foreach (CharacterRole characterRole in characterRoles)
         {
-            characterRole.ResetSavedStatsToDefault(selectedPosition);
+            characterRole.ResetSavedStatsToNewCareer(selectedPosition, startingStats);
         }
+    }
+
+    private static PlayerStats BuildNewCareerStartingStats(POSITION selectedPosition, PlayerStats allocatedStats)
+    {
+        PlayerStats startingStats = CreateBaseStartingStats();
+        int remainingBonusPoints = StartingBonusPoints;
+
+        if (allocatedStats != null)
+        {
+            foreach (PlayerStatType statType in StartingStatTypes)
+            {
+                int maxAllocatable = InitialStatCap - startingStats.GetValue(statType);
+                int requestedAmount = allocatedStats.GetValue(statType);
+                int appliedAmount = Mathf.Clamp(requestedAmount, 0, Mathf.Min(maxAllocatable, remainingBonusPoints));
+
+                startingStats.AddValue(statType, appliedAmount, InitialStatCap);
+                remainingBonusPoints -= appliedAmount;
+            }
+        }
+
+        ApplyPositionBonus(startingStats, selectedPosition);
+        return startingStats;
+    }
+
+    private static PlayerStats CreateBaseStartingStats()
+    {
+        PlayerStats stats = new PlayerStats();
+
+        foreach (PlayerStatType statType in StartingStatTypes)
+        {
+            stats.SetValue(statType, StartingStatValue);
+        }
+
+        return stats;
+    }
+
+    private static void ApplyPositionBonus(PlayerStats stats, POSITION position)
+    {
+        switch (position)
+        {
+            case POSITION.OutsideHitter:
+                AddStartingBonus(stats, PlayerStatType.Power, 4);
+                AddStartingBonus(stats, PlayerStatType.Jump, 3);
+                AddStartingBonus(stats, PlayerStatType.Receive, 3);
+                break;
+            case POSITION.OppositeHitter:
+                AddStartingBonus(stats, PlayerStatType.Power, 5);
+                AddStartingBonus(stats, PlayerStatType.Serve, 3);
+                AddStartingBonus(stats, PlayerStatType.Jump, 3);
+                break;
+            case POSITION.MiddleBlocker:
+                AddStartingBonus(stats, PlayerStatType.Block, 5);
+                AddStartingBonus(stats, PlayerStatType.Jump, 4);
+                AddStartingBonus(stats, PlayerStatType.Power, 3);
+                break;
+            case POSITION.Setter:
+                AddStartingBonus(stats, PlayerStatType.Set, 5);
+                AddStartingBonus(stats, PlayerStatType.Mental, 4);
+                AddStartingBonus(stats, PlayerStatType.Speed, 3);
+                break;
+            case POSITION.Libero:
+                AddStartingBonus(stats, PlayerStatType.Receive, 5);
+                AddStartingBonus(stats, PlayerStatType.Speed, 4);
+                AddStartingBonus(stats, PlayerStatType.Mental, 3);
+                break;
+            case POSITION.DefensiveSpecialist:
+                AddStartingBonus(stats, PlayerStatType.Receive, 4);
+                AddStartingBonus(stats, PlayerStatType.Speed, 4);
+                AddStartingBonus(stats, PlayerStatType.Stamina, 3);
+                break;
+        }
+    }
+
+    private static void AddStartingBonus(PlayerStats stats, PlayerStatType statType, int amount)
+    {
+        stats.AddValue(statType, amount, MaxStatValue);
     }
 
     private void ResolveCareerManagers()

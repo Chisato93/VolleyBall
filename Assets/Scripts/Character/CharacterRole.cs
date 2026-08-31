@@ -43,6 +43,19 @@ public class CharacterRole : MonoBehaviour
         selectedPosition = newPosition;
     }
 
+    public void ResetSavedStatsToNewCareer(POSITION newPosition, PlayerStats startingStats)
+    {
+        if (!usesSelectedPosition || playerData == null || playerData.Stats == null || startingStats == null)
+        {
+            return;
+        }
+
+        PlayerSaveManager.ResetPlayerStats(playerData);
+        playerData.Stats.CopyFrom(startingStats);
+        PlayerSaveManager.SavePlayerStats(playerData);
+        selectedPosition = newPosition;
+    }
+
     private POSITION GetDefaultPosition()
     {
         return playerData != null ? playerData.Position : position;

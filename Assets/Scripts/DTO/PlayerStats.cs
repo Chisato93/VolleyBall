@@ -66,35 +66,39 @@ public class PlayerStats
     public void AddValue(PlayerStatType statType, int amount, int maxValue)
     {
         int nextValue = ClampStat(GetValue(statType) + amount, maxValue);
+        SetValue(statType, nextValue);
+    }
 
+    public void SetValue(PlayerStatType statType, int value)
+    {
         switch (statType)
         {
             case PlayerStatType.Power:
-                Power = nextValue;
+                Power = value;
                 break;
             case PlayerStatType.Jump:
-                Jump = nextValue;
+                Jump = value;
                 break;
             case PlayerStatType.Receive:
-                Receive = nextValue;
+                Receive = value;
                 break;
             case PlayerStatType.Set:
-                Set = nextValue;
+                Set = value;
                 break;
             case PlayerStatType.Block:
-                Block = nextValue;
+                Block = value;
                 break;
             case PlayerStatType.Serve:
-                Serve = nextValue;
+                Serve = value;
                 break;
             case PlayerStatType.Speed:
-                Speed = nextValue;
+                Speed = value;
                 break;
             case PlayerStatType.Stamina:
-                Stamina = nextValue;
+                Stamina = value;
                 break;
             case PlayerStatType.Mental:
-                Mental = nextValue;
+                Mental = value;
                 break;
         }
     }
