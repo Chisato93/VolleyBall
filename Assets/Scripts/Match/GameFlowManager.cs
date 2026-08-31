@@ -21,6 +21,9 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private TMP_Text actionPointText;
     [SerializeField] private Button trainingActionButton;
     [SerializeField] private Button restActionButton;
+    [SerializeField] private Button shopActionButton;
+    [SerializeField] private Button playerInfoActionButton;
+    [SerializeField] private Button matchActionButton;
     [SerializeField] private MatchManager matchManager;
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
     [SerializeField] private WalletManager walletManager;
@@ -42,6 +45,7 @@ public class GameFlowManager : MonoBehaviour
     {
         None,
         CompleteAction,
+        ReturnToVillage,
         ReturnToMain
     }
 
@@ -93,6 +97,24 @@ public class GameFlowManager : MonoBehaviour
             restActionButton.onClick.AddListener(StartRestAction);
         }
 
+        if (shopActionButton != null)
+        {
+            shopActionButton.onClick.RemoveListener(StartShopAction);
+            shopActionButton.onClick.AddListener(StartShopAction);
+        }
+
+        if (playerInfoActionButton != null)
+        {
+            playerInfoActionButton.onClick.RemoveListener(StartPlayerInfoAction);
+            playerInfoActionButton.onClick.AddListener(StartPlayerInfoAction);
+        }
+
+        if (matchActionButton != null)
+        {
+            matchActionButton.onClick.RemoveListener(StartMatchAction);
+            matchActionButton.onClick.AddListener(StartMatchAction);
+        }
+
         if (resultCloseButton != null)
         {
             resultCloseButton.onClick.RemoveListener(HandleResultClose);
@@ -137,9 +159,9 @@ public class GameFlowManager : MonoBehaviour
         StartMainPhase();
     }
 
-    public void StartNewCareerFromTitle()
+    public void StartNewCareerFromTitle(POSITION selectedPosition)
     {
-        ResetCareerSaveData();
+        ResetCareerSaveData(selectedPosition);
         ContinueCareerFromTitle();
     }
 
@@ -205,7 +227,7 @@ public class GameFlowManager : MonoBehaviour
     {
         if (remainingActionPoints <= 0)
         {
-            StartMatchPhase();
+            ShowMainPanel();
             return;
         }
 
@@ -245,7 +267,12 @@ public class GameFlowManager : MonoBehaviour
     {
         if (actionPointText != null)
         {
-            actionPointText.text = $"행동력: {remainingActionPoints} / {maxActionPoints}";
+            int money = walletManager != null ? walletManager.CurrentMoney : 0;
+            int year = careerCalendarManager != null ? careerCalendarManager.CurrentYear : 1;
+            int month = careerCalendarManager != null ? careerCalendarManager.CurrentMonth : 11;
+            int evaluationScore = PlayerSaveManager.LoadSeasonCoachEvaluationScore();
+
+            actionPointText.text = $"마을\n행동력: {remainingActionPoints} / {maxActionPoints}\n돈: {money:N0}원\n날짜: {year}년 {month}월\n감독 평가점: {evaluationScore}";
         }
 
         if (trainingActionButton != null)
@@ -257,13 +284,28 @@ public class GameFlowManager : MonoBehaviour
         {
             restActionButton.interactable = remainingActionPoints > 0;
         }
+
+        if (shopActionButton != null)
+        {
+            shopActionButton.interactable = true;
+        }
+
+        if (playerInfoActionButton != null)
+        {
+            playerInfoActionButton.interactable = true;
+        }
+
+        if (matchActionButton != null)
+        {
+            matchActionButton.interactable = true;
+        }
     }
 
     private void StartRestAction()
     {
         if (remainingActionPoints <= 0)
         {
-            StartMatchPhase();
+            ShowMainPanel();
             return;
         }
 
@@ -283,25 +325,95 @@ public class GameFlowManager : MonoBehaviour
 
     private void CompleteAction()
     {
-        if (remainingActionPoints > 0)
+        ShowMainPanel();
+    }
+
+    private void StartShopAction()
+    {
+        resultCloseAction = ResultCloseAction.ReturnToVillage;
+        SetResultPanelActive(true);
+
+        if (resultText != null)
         {
-            ShowMainPanel();
-            return;
+            resultText.text = BuildShopText();
+        }
+    }
+
+    private void StartPlayerInfoAction()
+    {
+        resultCloseAction = ResultCloseAction.ReturnToVillage;
+        SetResultPanelActive(true);
+
+        if (resultText != null)
+        {
+            resultText.text = BuildPlayerInfoText();
+        }
+    }
+
+    private void StartMatchAction()
+    {
+        StartMatchPhase();
+    }
+
+    private string BuildShopText()
+    {
+        int money = walletManager != null ? walletManager.CurrentMoney : 0;
+
+        StringBuilder builder = new StringBuilder();
+        builder.AppendLine("상점");
+        builder.AppendLine();
+        builder.AppendLine($"보유 돈: {money:N0}원");
+        builder.AppendLine();
+        builder.AppendLine("상점 기능은 준비 중입니다.");
+        builder.AppendLine("나중에 장비, 훈련 보조 아이템, 회복 아이템 등을 여기에 추가할 수 있습니다.");
+        return builder.ToString();
+    }
+
+    private string BuildPlayerInfoText()
+    {
+        StringBuilder builder = new StringBuilder();
+        int money = walletManager != null ? walletManager.CurrentMoney : 0;
+        int year = careerCalendarManager != null ? careerCalendarManager.CurrentYear : 1;
+        int month = careerCalendarManager != null ? careerCalendarManager.CurrentMonth : 11;
+        int evaluationScore = PlayerSaveManager.LoadSeasonCoachEvaluationScore();
+
+        builder.AppendLine("내정보");
+        builder.AppendLine();
+        builder.AppendLine($"돈: {money:N0}원");
+        builder.AppendLine($"날짜: {year}년 {month}월");
+        builder.AppendLine($"시즌 감독 평가점: {evaluationScore}");
+        builder.AppendLine();
+
+        if (!TryGetPlayerRole(out CharacterRole characterRole))
+        {
+            builder.AppendLine("플레이어 정보를 찾지 못했습니다.");
+            return builder.ToString();
         }
 
-        StartMatchPhase();
+        PlayerData playerData = characterRole.PlayerData;
+        PlayerStats stats = playerData.Stats;
+        builder.AppendLine($"이름: {playerData.PlayerName}");
+        builder.AppendLine($"등번호: {playerData.Number}");
+        builder.AppendLine($"포지션: {characterRole.Position}");
+        builder.AppendLine();
+        builder.AppendLine("능력치");
+        builder.AppendLine($"파워 {stats.Power} / 점프 {stats.Jump} / 리시브 {stats.Receive}");
+        builder.AppendLine($"토스 {stats.Set} / 블록 {stats.Block} / 서브 {stats.Serve}");
+        builder.AppendLine($"스피드 {stats.Speed} / 체력 {stats.Stamina} / 멘탈 {stats.Mental}");
+        return builder.ToString();
     }
 
     private RestResult ApplyRestAction()
     {
         RestResult result = new RestResult();
 
-        if (!TryGetPlayerData(out PlayerData playerData))
+        if (!TryGetPlayerRole(out CharacterRole characterRole))
         {
             result.Success = false;
             return result;
         }
 
+        PlayerData playerData = characterRole.PlayerData;
         PlayerStats stats = playerData.Stats;
         int staminaBefore = stats.Stamina;
         int mentalBefore = stats.Mental;
@@ -491,6 +603,9 @@ public class GameFlowManager : MonoBehaviour
             case ResultCloseAction.CompleteAction:
                 CompleteAction();
                 break;
+            case ResultCloseAction.ReturnToVillage:
+                ShowMainPanel();
+                break;
             case ResultCloseAction.ReturnToMain:
                 StartMainPhase();
                 break;
@@ -501,32 +616,64 @@ public class GameFlowManager : MonoBehaviour
 
     private void CreateMissingMainControls()
     {
-        if (restActionButton != null || trainingActionButton == null || mainPanel == null)
+        if (trainingActionButton == null || mainPanel == null)
         {
             return;
         }
 
-        restActionButton = Instantiate(trainingActionButton, mainPanel.transform);
-        restActionButton.name = "RestActionButton";
-        restActionButton.onClick.RemoveAllListeners();
-
-        RectTransform restTransform = restActionButton.GetComponent<RectTransform>();
         RectTransform trainingTransform = trainingActionButton.GetComponent<RectTransform>();
-        if (restTransform != null && trainingTransform != null)
+        if (trainingTransform != null)
         {
-            restTransform.anchoredPosition = trainingTransform.anchoredPosition + new Vector2(0f, -88f);
+            trainingTransform.anchoredPosition = new Vector2(0f, 72f);
+        }
+
+        if (restActionButton == null)
+        {
+            restActionButton = CreateVillageButton("RestActionButton", "휴식", -16f);
+        }
+        else
+        {
+            restActionButton.gameObject.SetActive(true);
+
+            RectTransform restTransform = restActionButton.GetComponent<RectTransform>();
+            if (restTransform != null)
+            {
+                restTransform.anchoredPosition = new Vector2(0f, -16f);
+            }
+
+            TMP_Text restButtonText = restActionButton.GetComponentInChildren<TMP_Text>(true);
+            if (restButtonText != null)
+            {
+                restButtonText.text = "휴식";
+            }
         }
 
         RectTransform mainPanelTransform = mainPanel.GetComponent<RectTransform>();
         if (mainPanelTransform != null)
         {
-            mainPanelTransform.sizeDelta = new Vector2(mainPanelTransform.sizeDelta.x, 388f);
+            mainPanelTransform.sizeDelta = new Vector2(mainPanelTransform.sizeDelta.x, 620f);
         }
 
-        TMP_Text restButtonText = restActionButton.GetComponentInChildren<TMP_Text>(true);
-        if (restButtonText != null)
+        RectTransform actionPointTransform = actionPointText != null ? actionPointText.GetComponent<RectTransform>() : null;
+        if (actionPointTransform != null)
         {
-            restButtonText.text = "휴식";
+            actionPointTransform.anchoredPosition = new Vector2(0f, 184f);
+            actionPointTransform.sizeDelta = new Vector2(460f, 156f);
+        }
+
+        if (shopActionButton == null)
+        {
+            shopActionButton = CreateVillageButton("ShopActionButton", "상점", -104f);
+        }
+
+        if (playerInfoActionButton == null)
+        {
+            playerInfoActionButton = CreateVillageButton("PlayerInfoActionButton", "내정보", -192f);
+        }
+
+        if (matchActionButton == null)
+        {
+            matchActionButton = CreateVillageButton("MatchActionButton", "경기 시작", -280f);
         }
 
         TMP_Text trainingButtonText = trainingActionButton.GetComponentInChildren<TMP_Text>(true);
@@ -534,6 +681,27 @@ public class GameFlowManager : MonoBehaviour
         {
             trainingButtonText.text = "훈련";
         }
+    }
+
+    private Button CreateVillageButton(string buttonName, string buttonText, float yPosition)
+    {
+        Button button = Instantiate(trainingActionButton, mainPanel.transform);
+        button.name = buttonName;
+        button.onClick.RemoveAllListeners();
+
+        RectTransform buttonTransform = button.GetComponent<RectTransform>();
+        if (buttonTransform != null)
+        {
+            buttonTransform.anchoredPosition = new Vector2(0f, yPosition);
+        }
+
+        TMP_Text text = button.GetComponentInChildren<TMP_Text>(true);
+        if (text != null)
+        {
+            text.text = buttonText;
+        }
+
+        return button;
     }
 
     private void CreateMissingResultPanel()
@@ -623,7 +791,7 @@ public class GameFlowManager : MonoBehaviour
         return null;
     }
 
-    private void ResetCareerSaveData()
+    private void ResetCareerSaveData(POSITION selectedPosition)
     {
         ResolveCareerManagers();
 
@@ -638,11 +806,12 @@ public class GameFlowManager : MonoBehaviour
         }
 
         PlayerSaveManager.ResetSeasonCoachEvaluationScore();
+        PlayerSaveManager.SaveSelectedPosition(selectedPosition);
 
         CharacterRole[] characterRoles = FindObjectsByType<CharacterRole>(FindObjectsSortMode.None);
         foreach (CharacterRole characterRole in characterRoles)
         {
-            characterRole.ResetSavedStatsToDefault();
+            characterRole.ResetSavedStatsToDefault(selectedPosition);
         }
     }
 
@@ -659,9 +828,9 @@ public class GameFlowManager : MonoBehaviour
         }
     }
 
-    private static bool TryGetPlayerData(out PlayerData playerData)
+    private static bool TryGetPlayerRole(out CharacterRole characterRole)
     {
-        playerData = null;
+        characterRole = null;
 
         Player player = FindFirstObjectByType<Player>();
         if (player == null)
@@ -669,13 +838,12 @@ public class GameFlowManager : MonoBehaviour
             return false;
         }
 
-        CharacterRole characterRole = player.GetComponent<CharacterRole>();
+        characterRole = player.GetComponent<CharacterRole>();
         if (characterRole == null || characterRole.PlayerData == null || characterRole.PlayerData.Stats == null)
         {
             return false;
         }
 
-        playerData = characterRole.PlayerData;
         return true;
     }
 

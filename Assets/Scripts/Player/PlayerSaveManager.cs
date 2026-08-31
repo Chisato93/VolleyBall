@@ -6,6 +6,7 @@ public static class PlayerSaveManager
     private const string CareerYearPrefsKey = "CareerCurrentYear";
     private const string CareerMonthPrefsKey = "CareerCurrentMonth";
     private const string SeasonCoachEvaluationScorePrefsKey = "SeasonCoachEvaluationScore";
+    private const string SelectedPositionPrefsKey = "PlayerSelectedPosition";
     private const string PlayerStatsPrefsKeyPrefix = "PlayerStats";
     private const int MinCareerYear = 1;
 
@@ -52,6 +53,18 @@ public static class PlayerSaveManager
     public static void SaveSeasonCoachEvaluationScore(int score)
     {
         PlayerPrefs.SetInt(SeasonCoachEvaluationScorePrefsKey, Mathf.Max(0, score));
+        PlayerPrefs.Save();
+    }
+
+    public static POSITION LoadSelectedPosition(POSITION defaultValue)
+    {
+        int savedValue = PlayerPrefs.GetInt(SelectedPositionPrefsKey, (int)defaultValue);
+        return System.Enum.IsDefined(typeof(POSITION), savedValue) ? (POSITION)savedValue : defaultValue;
+    }
+
+    public static void SaveSelectedPosition(POSITION position)
+    {
+        PlayerPrefs.SetInt(SelectedPositionPrefsKey, (int)position);
         PlayerPrefs.Save();
     }
 
@@ -107,6 +120,12 @@ public static class PlayerSaveManager
     public static void ResetSeasonCoachEvaluationScore()
     {
         SaveSeasonCoachEvaluationScore(0);
+    }
+
+    public static void ResetSelectedPosition()
+    {
+        PlayerPrefs.DeleteKey(SelectedPositionPrefsKey);
+        PlayerPrefs.Save();
     }
 
     public static void ResetPlayerStats(PlayerData playerData)

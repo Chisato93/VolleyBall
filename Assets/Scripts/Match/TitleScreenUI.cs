@@ -6,6 +6,7 @@ public class TitleScreenUI : MonoBehaviour
 {
     private GameFlowManager gameFlowManager;
     private GameObject titlePanel;
+    private GameObject positionPanel;
     private TMP_Text fontSource;
 
     public void Initialize(GameFlowManager owner, Transform uiRoot, TMP_Text sourceText)
@@ -17,6 +18,11 @@ public class TitleScreenUI : MonoBehaviour
         {
             CreateTitlePanel(uiRoot);
         }
+
+        if (positionPanel == null)
+        {
+            CreatePositionPanel(uiRoot);
+        }
     }
 
     public void Show()
@@ -26,6 +32,11 @@ public class TitleScreenUI : MonoBehaviour
             titlePanel.SetActive(true);
             titlePanel.transform.SetAsLastSibling();
         }
+
+        if (positionPanel != null)
+        {
+            positionPanel.SetActive(false);
+        }
     }
 
     public void Hide()
@@ -33,6 +44,11 @@ public class TitleScreenUI : MonoBehaviour
         if (titlePanel != null)
         {
             titlePanel.SetActive(false);
+        }
+
+        if (positionPanel != null)
+        {
+            positionPanel.SetActive(false);
         }
     }
 
@@ -77,10 +93,59 @@ public class TitleScreenUI : MonoBehaviour
         titlePanel.SetActive(false);
     }
 
+    private void CreatePositionPanel(Transform uiRoot)
+    {
+        if (uiRoot == null)
+        {
+            return;
+        }
+
+        positionPanel = new GameObject("PositionSelectPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        positionPanel.transform.SetParent(uiRoot, false);
+
+        RectTransform panelTransform = positionPanel.GetComponent<RectTransform>();
+        panelTransform.anchorMin = Vector2.zero;
+        panelTransform.anchorMax = Vector2.one;
+        panelTransform.offsetMin = Vector2.zero;
+        panelTransform.offsetMax = Vector2.zero;
+
+        Image panelImage = positionPanel.GetComponent<Image>();
+        panelImage.color = new Color(0.05f, 0.08f, 0.1f, 0.97f);
+
+        TMP_Text titleText = CreateText(positionPanel, "PositionTitleText", "포지션 선택", 54f, TextAlignmentOptions.Center);
+        RectTransform titleTransform = titleText.GetComponent<RectTransform>();
+        titleTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        titleTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        titleTransform.anchoredPosition = new Vector2(0f, 260f);
+        titleTransform.sizeDelta = new Vector2(680f, 80f);
+
+        TMP_Text guideText = CreateText(positionPanel, "PositionGuideText", "새 커리어에서 맡을 포지션을 선택하세요.", 26f, TextAlignmentOptions.Center);
+        RectTransform guideTransform = guideText.GetComponent<RectTransform>();
+        guideTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        guideTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        guideTransform.anchoredPosition = new Vector2(0f, 196f);
+        guideTransform.sizeDelta = new Vector2(760f, 48f);
+
+        CreatePositionButton("OutsideHitterButton", "아웃사이드 히터", POSITION.OutsideHitter, new Vector2(-190f, 92f));
+        CreatePositionButton("OppositeHitterButton", "아포짓 히터", POSITION.OppositeHitter, new Vector2(190f, 92f));
+        CreatePositionButton("MiddleBlockerButton", "미들 블로커", POSITION.MiddleBlocker, new Vector2(-190f, 8f));
+        CreatePositionButton("SetterButton", "세터", POSITION.Setter, new Vector2(190f, 8f));
+        CreatePositionButton("LiberoButton", "리베로", POSITION.Libero, new Vector2(-190f, -76f));
+        CreatePositionButton("DefensiveSpecialistButton", "디펜시브 스페셜리스트", POSITION.DefensiveSpecialist, new Vector2(190f, -76f));
+        CreateButton(positionPanel, "BackButton", "뒤로", new Vector2(0f, -190f), HandleBackFromPositionSelect);
+
+        positionPanel.SetActive(false);
+    }
+
     private TMP_Text CreateText(string objectName, string text, float fontSize, TextAlignmentOptions alignment)
     {
+        return CreateText(titlePanel, objectName, text, fontSize, alignment);
+    }
+
+    private TMP_Text CreateText(GameObject parent, string objectName, string text, float fontSize, TextAlignmentOptions alignment)
+    {
         GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(titlePanel.transform, false);
+        textObject.transform.SetParent(parent.transform, false);
 
         TMP_Text textComponent = textObject.GetComponent<TMP_Text>();
         textComponent.text = text;
@@ -102,8 +167,13 @@ public class TitleScreenUI : MonoBehaviour
 
     private void CreateButton(string objectName, string buttonText, Vector2 anchoredPosition, UnityEngine.Events.UnityAction action)
     {
+        CreateButton(titlePanel, objectName, buttonText, anchoredPosition, action);
+    }
+
+    private void CreateButton(GameObject parent, string objectName, string buttonText, Vector2 anchoredPosition, UnityEngine.Events.UnityAction action)
+    {
         GameObject buttonObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-        buttonObject.transform.SetParent(titlePanel.transform, false);
+        buttonObject.transform.SetParent(parent.transform, false);
 
         RectTransform buttonTransform = buttonObject.GetComponent<RectTransform>();
         buttonTransform.anchorMin = new Vector2(0.5f, 0.5f);
@@ -117,13 +187,17 @@ public class TitleScreenUI : MonoBehaviour
         Button button = buttonObject.GetComponent<Button>();
         button.onClick.AddListener(action);
 
-        TMP_Text textComponent = CreateText($"{objectName}Text", buttonText, 30f, TextAlignmentOptions.Center);
+        TMP_Text textComponent = CreateText(buttonObject, $"{objectName}Text", buttonText, 30f, TextAlignmentOptions.Center);
         RectTransform textTransform = textComponent.GetComponent<RectTransform>();
-        textTransform.SetParent(buttonObject.transform, false);
         textTransform.anchorMin = Vector2.zero;
         textTransform.anchorMax = Vector2.one;
         textTransform.offsetMin = Vector2.zero;
         textTransform.offsetMax = Vector2.zero;
+    }
+
+    private void CreatePositionButton(string objectName, string buttonText, POSITION position, Vector2 anchoredPosition)
+    {
+        CreateButton(positionPanel, objectName, buttonText, anchoredPosition, () => HandlePositionSelected(position));
     }
 
     private void HandleContinue()
@@ -136,9 +210,37 @@ public class TitleScreenUI : MonoBehaviour
 
     private void HandleNewGame()
     {
+        if (titlePanel != null)
+        {
+            titlePanel.SetActive(false);
+        }
+
+        if (positionPanel != null)
+        {
+            positionPanel.SetActive(true);
+            positionPanel.transform.SetAsLastSibling();
+        }
+    }
+
+    private void HandleBackFromPositionSelect()
+    {
+        if (positionPanel != null)
+        {
+            positionPanel.SetActive(false);
+        }
+
+        if (titlePanel != null)
+        {
+            titlePanel.SetActive(true);
+            titlePanel.transform.SetAsLastSibling();
+        }
+    }
+
+    private void HandlePositionSelected(POSITION position)
+    {
         if (gameFlowManager != null)
         {
-            gameFlowManager.StartNewCareerFromTitle();
+            gameFlowManager.StartNewCareerFromTitle(position);
         }
     }
 

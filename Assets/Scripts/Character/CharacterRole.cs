@@ -8,29 +8,43 @@ public class CharacterRole : MonoBehaviour
     [SerializeField] private PlayerStats fallbackStats = new PlayerStats();
 
     private PlayerStats defaultStats;
+    private POSITION selectedPosition;
+    private bool usesSelectedPosition;
 
     public PlayerData PlayerData => playerData;
     public TeamSide TeamSide => playerData != null ? playerData.TeamSide : teamSide;
-    public POSITION Position => playerData != null ? playerData.Position : position;
+    public POSITION Position => usesSelectedPosition ? selectedPosition : GetDefaultPosition();
     public PlayerStats Stats => playerData != null ? playerData.Stats : fallbackStats;
 
     private void Awake()
     {
-        if (playerData != null && playerData.TeamSide == global::TeamSide.Player && playerData.Stats != null)
+        selectedPosition = GetDefaultPosition();
+        usesSelectedPosition = playerData != null
+            && playerData.TeamSide == global::TeamSide.Player
+            && GetComponent<Player>() != null;
+
+        if (usesSelectedPosition && playerData.Stats != null)
         {
             defaultStats = playerData.Stats.Clone();
             PlayerSaveManager.LoadPlayerStats(playerData);
+            selectedPosition = PlayerSaveManager.LoadSelectedPosition(playerData.Position);
         }
     }
 
-    public void ResetSavedStatsToDefault()
+    public void ResetSavedStatsToDefault(POSITION newPosition)
     {
-        if (playerData == null || playerData.TeamSide != global::TeamSide.Player || defaultStats == null)
+        if (!usesSelectedPosition || playerData == null || defaultStats == null)
         {
             return;
         }
 
         PlayerSaveManager.ResetPlayerStats(playerData);
         playerData.Stats.CopyFrom(defaultStats);
+        selectedPosition = newPosition;
+    }
+
+    private POSITION GetDefaultPosition()
+    {
+        return playerData != null ? playerData.Position : position;
     }
 }
