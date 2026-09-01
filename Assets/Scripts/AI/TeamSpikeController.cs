@@ -11,6 +11,9 @@ public class TeamSpikeController : MonoBehaviour
     [SerializeField] private float spikeForwardSpeed = 8f;
     [SerializeField] private float spikeDownSpeed = 3f;
     [SerializeField] private float spikeCooldown = 0.75f;
+    [SerializeField] private float courtHalfWidth = 5f;
+    [SerializeField] private float courtHalfLength = 10f;
+    [SerializeField] private float netBuffer = 0.35f;
 
     private MatchManager matchManager;
     private Transform ball;
@@ -128,10 +131,11 @@ public class TeamSpikeController : MonoBehaviour
     {
         Vector3 currentPosition = attackerTransform.position;
         Vector3 targetPosition = new Vector3(ball.position.x, currentPosition.y, ball.position.z);
-        attackerTransform.position = Vector3.MoveTowards(
+        Vector3 nextPosition = Vector3.MoveTowards(
             currentPosition,
             targetPosition,
             moveSpeed * Time.deltaTime);
+        attackerTransform.position = ClampToOwnCourt(nextPosition);
 
         Vector3 lookDirection = targetPosition - currentPosition;
         lookDirection.y = 0f;
@@ -186,5 +190,21 @@ public class TeamSpikeController : MonoBehaviour
         a.y = 0f;
         b.y = 0f;
         return Vector3.Distance(a, b);
+    }
+
+    private Vector3 ClampToOwnCourt(Vector3 position)
+    {
+        position.x = Mathf.Clamp(position.x, -courtHalfWidth, courtHalfWidth);
+
+        if (controlledTeam == TeamSide.Player)
+        {
+            position.z = Mathf.Clamp(position.z, -courtHalfLength, -netBuffer);
+        }
+        else
+        {
+            position.z = Mathf.Clamp(position.z, netBuffer, courtHalfLength);
+        }
+
+        return position;
     }
 }

@@ -10,6 +10,9 @@ public class TeamReceiveController : MonoBehaviour
     [SerializeField] private float receiveForwardSpeed = 5f;
     [SerializeField] private float receiveUpSpeed = 4f;
     [SerializeField] private float receiveCooldown = 0.75f;
+    [SerializeField] private float courtHalfWidth = 5f;
+    [SerializeField] private float courtHalfLength = 10f;
+    [SerializeField] private float netBuffer = 0.35f;
 
     private MatchManager matchManager;
     private Transform ball;
@@ -114,10 +117,11 @@ public class TeamReceiveController : MonoBehaviour
     {
         Vector3 currentPosition = receiverTransform.position;
         Vector3 targetPosition = new Vector3(ball.position.x, currentPosition.y, ball.position.z);
-        receiverTransform.position = Vector3.MoveTowards(
+        Vector3 nextPosition = Vector3.MoveTowards(
             currentPosition,
             targetPosition,
             moveSpeed * Time.deltaTime);
+        receiverTransform.position = ClampToOwnCourt(nextPosition);
 
         Vector3 lookDirection = targetPosition - currentPosition;
         lookDirection.y = 0f;
@@ -165,5 +169,21 @@ public class TeamReceiveController : MonoBehaviour
         a.y = 0f;
         b.y = 0f;
         return Vector3.Distance(a, b);
+    }
+
+    private Vector3 ClampToOwnCourt(Vector3 position)
+    {
+        position.x = Mathf.Clamp(position.x, -courtHalfWidth, courtHalfWidth);
+
+        if (controlledTeam == TeamSide.Player)
+        {
+            position.z = Mathf.Clamp(position.z, -courtHalfLength, -netBuffer);
+        }
+        else
+        {
+            position.z = Mathf.Clamp(position.z, netBuffer, courtHalfLength);
+        }
+
+        return position;
     }
 }
