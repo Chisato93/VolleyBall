@@ -18,8 +18,7 @@ public class MatchManager : MonoBehaviour
     public int TargetScore => targetScore;
     public MatchStats CurrentMatchStats => matchStats;
 
-    private bool hasAdvancedCareerCalendar;
-    private bool hasShownTrainingSelection;
+    private readonly MatchEndState matchEnd = new MatchEndState();
     private readonly MatchScoreState score = new MatchScoreState();
     private readonly RallyState rally = new RallyState();
     private readonly MatchStats matchStats = new MatchStats();
@@ -60,8 +59,7 @@ public class MatchManager : MonoBehaviour
     public void StartMatch()
     {
         score.Reset(targetScore, TeamSide.Player);
-        hasAdvancedCareerCalendar = false;
-        hasShownTrainingSelection = false;
+        matchEnd.Reset();
         matchStats.Reset();
         StartServe();
     }
@@ -152,16 +150,13 @@ public class MatchManager : MonoBehaviour
         ChangeState(isMatchOver ? MatchState.MatchOver : MatchState.PointScored);
         matchStats.SetFinalScore(PlayerScore, OpponentScore);
 
-        if (isMatchOver && !hasAdvancedCareerCalendar)
+        if (isMatchOver && matchEnd.TryMarkCareerCalendarAdvanced())
         {
-            hasAdvancedCareerCalendar = true;
             careerCalendarManager.AdvanceAfterMatch();
         }
 
-        if (isMatchOver && !hasShownTrainingSelection)
+        if (isMatchOver && matchEnd.TryMarkTrainingSelectionShown())
         {
-            hasShownTrainingSelection = true;
-
             if (gameFlowManager != null)
             {
                 gameFlowManager.OnMatchEnded();
