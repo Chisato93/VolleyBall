@@ -3,26 +3,31 @@ using UnityEngine;
 public class MatchManager : MonoBehaviour
 {
     [SerializeField] private int targetScore = 11;
-    [SerializeField] private TeamSide servingTeam = TeamSide.Player;
     [SerializeField] private bool showDebugGui = true;
     [SerializeField] private CareerCalendarManager careerCalendarManager;
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
     [SerializeField] private GameFlowManager gameFlowManager;
 
     public MatchState CurrentState { get; private set; } = MatchState.None;
-    public TeamSide ServingTeam => servingTeam;
+    public TeamSide ServingTeam => score.ServingTeam;
     public TeamSide ReceivingTeam => rally.ReceivingTeam;
     public TeamSide CurrentTouchTeam => rally.CurrentTouchTeam;
     public int CurrentTouchCount => rally.CurrentTouchCount;
-    public int PlayerScore { get; private set; }
-    public int OpponentScore { get; private set; }
+    public int PlayerScore => score.PlayerScore;
+    public int OpponentScore => score.OpponentScore;
     public int TargetScore => targetScore;
     public MatchStats CurrentMatchStats => matchStats;
 
     private bool hasAdvancedCareerCalendar;
     private bool hasShownTrainingSelection;
+    private readonly MatchScoreState score = new MatchScoreState();
     private readonly RallyState rally = new RallyState();
     private readonly MatchStats matchStats = new MatchStats();
+
+    private void Awake()
+    {
+        score.Reset(targetScore, TeamSide.Player);
+    }
 
     private void Start()
     {
@@ -54,9 +59,7 @@ public class MatchManager : MonoBehaviour
 
     public void StartMatch()
     {
-        PlayerScore = 0;
-        OpponentScore = 0;
-        servingTeam = TeamSide.Player;
+        score.Reset(targetScore, TeamSide.Player);
         hasAdvancedCareerCalendar = false;
         hasShownTrainingSelection = false;
         matchStats.Reset();
@@ -65,13 +68,13 @@ public class MatchManager : MonoBehaviour
 
     public void StartServe()
     {
-        rally.ResetForServe(servingTeam, GetOppositeTeam(servingTeam));
+        rally.ResetForServe(ServingTeam, GetOppositeTeam(ServingTeam));
         ChangeState(MatchState.ServeReady);
     }
 
     public bool BallServed(TeamSide team, CharacterRole actor = null)
     {
-        if (CurrentState != MatchState.ServeReady || team != servingTeam)
+        if (CurrentState != MatchState.ServeReady || team != ServingTeam)
         {
             return false;
         }
@@ -144,16 +147,7 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        if (scoringTeam == TeamSide.Player)
-        {
-            PlayerScore++;
-        }
-        else
-        {
-            OpponentScore++;
-        }
-
-        servingTeam = scoringTeam;
+        score.ScorePoint(scoringTeam);
         bool isMatchOver = IsMatchOver();
         ChangeState(isMatchOver ? MatchState.MatchOver : MatchState.PointScored);
         matchStats.SetFinalScore(PlayerScore, OpponentScore);
@@ -191,7 +185,7 @@ public class MatchManager : MonoBehaviour
 
     public bool CanServe(TeamSide team)
     {
-        return CurrentState == MatchState.ServeReady && team == servingTeam;
+        return CurrentState == MatchState.ServeReady && team == ServingTeam;
     }
 
     public bool CanPlayRallyAction()
@@ -209,7 +203,7 @@ public class MatchManager : MonoBehaviour
         GUILayout.BeginArea(new Rect(10f, 10f, 220f, 290f), GUI.skin.box);
         GUILayout.Label($"State: {CurrentState}");
         GUILayout.Label($"Score: Player {PlayerScore} - {OpponentScore} Opponent");
-        GUILayout.Label($"Serving: {servingTeam}");
+        GUILayout.Label($"Serving: {ServingTeam}");
         GUILayout.Label($"Receiving: {ReceivingTeam}");
         GUILayout.Label($"Touch: {CurrentTouchTeam} x {CurrentTouchCount}");
         GUILayout.Label($"Last Attack: {(rally.HasLastAttackTeam ? rally.LastAttackTeam.ToString() : "None")}");
@@ -259,9 +253,9 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        if (PlayerScore < targetScore - 1)
+        if (PlayerScore < TargetScore - 1)
         {
-            PlayerScore = targetScore - 1;
+            score.SetPlayerScore(TargetScore - 1);
         }
 
         ScorePoint(TeamSide.Player);
@@ -276,7 +270,7 @@ public class MatchManager : MonoBehaviour
                 StartMatch();
                 break;
             case MatchState.ServeReady:
-                BallServed(servingTeam);
+                BallServed(ServingTeam);
                 break;
             case MatchState.Rally:
                 RegisterTouch(CurrentTouchTeam, BallTouchAction.Receive);
@@ -292,7 +286,7 @@ public class MatchManager : MonoBehaviour
 
     private bool IsMatchOver()
     {
-        return PlayerScore >= targetScore || OpponentScore >= targetScore;
+        return score.IsMatchOver();
     }
 
     private static TeamSide GetOppositeTeam(TeamSide team)
