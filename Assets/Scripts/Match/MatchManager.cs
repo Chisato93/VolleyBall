@@ -3,7 +3,9 @@ using UnityEngine;
 public class MatchManager : MonoBehaviour
 {
     [SerializeField] private int targetScore = 11;
+#if UNITY_EDITOR
     [SerializeField] private bool showDebugGui = true;
+#endif
     [SerializeField] private CareerCalendarManager careerCalendarManager;
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
     [SerializeField] private GameFlowManager gameFlowManager;
@@ -30,6 +32,12 @@ public class MatchManager : MonoBehaviour
 
     private void Start()
     {
+        EnsureReferences();
+        StartMatchIfNeeded();
+    }
+
+    private void EnsureReferences()
+    {
         if (careerCalendarManager == null)
         {
             careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
@@ -49,7 +57,10 @@ public class MatchManager : MonoBehaviour
         {
             gameFlowManager = FindFirstObjectByType<GameFlowManager>();
         }
+    }
 
+    private void StartMatchIfNeeded()
+    {
         if (CurrentState == MatchState.None && gameFlowManager == null)
         {
             StartMatch();
@@ -176,6 +187,7 @@ public class MatchManager : MonoBehaviour
         return CurrentState == MatchState.Rally;
     }
 
+#if UNITY_EDITOR
     private void OnGUI()
     {
         if (!showDebugGui)
@@ -266,6 +278,7 @@ public class MatchManager : MonoBehaviour
                 break;
         }
     }
+#endif
 
     private bool IsMatchOver()
     {
