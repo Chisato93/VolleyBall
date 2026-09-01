@@ -8,6 +8,9 @@ public class MatchManager : MonoBehaviour
     [SerializeField] private float autoServeForwardSpeed = 8f;
     [SerializeField] private float autoServeUpSpeed = 4f;
     [SerializeField] private Vector3 autoServeSpawnOffset = new Vector3(0f, 1.2f, 1f);
+    [SerializeField] private float autoServeTargetDepth = 6f;
+    [SerializeField] private float autoServeTargetHeight = 0.8f;
+    [SerializeField] private float autoServeArcHeight = 4f;
     [SerializeField] private float nextServeDelay = 1.2f;
 #if UNITY_EDITOR
     [SerializeField] private bool showDebugGui = true;
@@ -429,17 +432,46 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        Vector3 serveDirection = ServingTeam == TeamSide.Player ? Vector3.forward : Vector3.back;
+        Vector3 serveDirection = GetServeDirection(ServingTeam);
         Vector3 spawnPosition = server.transform.position
             + server.transform.right * autoServeSpawnOffset.x
             + Vector3.up * autoServeSpawnOffset.y
             + serveDirection * autoServeSpawnOffset.z;
+        Vector3 targetPosition = GetAutoServeTargetPosition(ServingTeam);
 
         ballBody.position = spawnPosition;
         ballBody.linearVelocity = Vector3.zero;
         ballBody.angularVelocity = Vector3.zero;
-        ballBody.linearVelocity = serveDirection * autoServeForwardSpeed + Vector3.up * autoServeUpSpeed;
+        ballBody.linearVelocity = CalculateAutoServeVelocity(spawnPosition, targetPosition, serveDirection);
         BallServed(ServingTeam, server);
+    }
+
+    private Vector3 GetAutoServeTargetPosition(TeamSide servingTeam)
+    {
+        float targetZ = servingTeam == TeamSide.Player ? autoServeTargetDepth : -autoServeTargetDepth;
+        return new Vector3(0f, autoServeTargetHeight, targetZ);
+    }
+
+    private Vector3 CalculateAutoServeVelocity(Vector3 startPosition, Vector3 targetPosition, Vector3 fallbackDirection)
+    {
+        float gravity = Mathf.Abs(Physics.gravity.y);
+        if (gravity <= 0.001f)
+        {
+            return fallbackDirection * autoServeForwardSpeed + Vector3.up * autoServeUpSpeed;
+        }
+
+        float heightAboveStart = Mathf.Max(autoServeArcHeight, targetPosition.y - startPosition.y + 0.1f);
+        float verticalSpeed = Mathf.Sqrt(2f * gravity * heightAboveStart);
+        float peakY = startPosition.y + heightAboveStart;
+        float fallDistance = Mathf.Max(0.1f, peakY - targetPosition.y);
+        float timeToPeak = verticalSpeed / gravity;
+        float timeToTarget = timeToPeak + Mathf.Sqrt(2f * fallDistance / gravity);
+
+        Vector3 horizontalDelta = targetPosition - startPosition;
+        horizontalDelta.y = 0f;
+        Vector3 horizontalVelocity = horizontalDelta / timeToTarget;
+
+        return horizontalVelocity + Vector3.up * verticalSpeed;
     }
 
     private Rigidbody GetBallRigidbody()
@@ -481,6 +513,11 @@ public class MatchManager : MonoBehaviour
     private static TeamSide GetOppositeTeam(TeamSide team)
     {
         return team == TeamSide.Player ? TeamSide.Opponent : TeamSide.Player;
+    }
+
+    private static Vector3 GetServeDirection(TeamSide servingTeam)
+    {
+        return servingTeam == TeamSide.Player ? Vector3.forward : Vector3.back;
     }
 
     private void ChangeState(MatchState nextState)
