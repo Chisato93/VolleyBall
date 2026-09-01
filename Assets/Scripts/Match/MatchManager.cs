@@ -11,19 +11,17 @@ public class MatchManager : MonoBehaviour
 
     public MatchState CurrentState { get; private set; } = MatchState.None;
     public TeamSide ServingTeam => servingTeam;
-    public TeamSide ReceivingTeam { get; private set; } = TeamSide.Opponent;
-    public TeamSide CurrentTouchTeam { get; private set; }
-    public int CurrentTouchCount { get; private set; }
+    public TeamSide ReceivingTeam => rally.ReceivingTeam;
+    public TeamSide CurrentTouchTeam => rally.CurrentTouchTeam;
+    public int CurrentTouchCount => rally.CurrentTouchCount;
     public int PlayerScore { get; private set; }
     public int OpponentScore { get; private set; }
     public int TargetScore => targetScore;
     public MatchStats CurrentMatchStats => matchStats;
 
-    private TeamSide lastAttackTeam;
-    private CharacterRole lastAttackActor;
-    private bool hasLastAttackTeam;
     private bool hasAdvancedCareerCalendar;
     private bool hasShownTrainingSelection;
+    private readonly RallyState rally = new RallyState();
     private readonly MatchStats matchStats = new MatchStats();
 
     private void Start()
@@ -61,18 +59,13 @@ public class MatchManager : MonoBehaviour
         servingTeam = TeamSide.Player;
         hasAdvancedCareerCalendar = false;
         hasShownTrainingSelection = false;
-        lastAttackActor = null;
         matchStats.Reset();
         StartServe();
     }
 
     public void StartServe()
     {
-        CurrentTouchTeam = servingTeam;
-        ReceivingTeam = GetOppositeTeam(servingTeam);
-        CurrentTouchCount = 0;
-        hasLastAttackTeam = false;
-        lastAttackActor = null;
+        rally.ResetForServe(servingTeam, GetOppositeTeam(servingTeam));
         ChangeState(MatchState.ServeReady);
     }
 
@@ -83,9 +76,7 @@ public class MatchManager : MonoBehaviour
             return false;
         }
 
-        CurrentTouchTeam = team;
-        ReceivingTeam = GetOppositeTeam(team);
-        CurrentTouchCount = 1;
+        rally.RecordServe(team, GetOppositeTeam(team));
         matchStats.RecordTouch(actor, BallTouchAction.Serve);
         ChangeState(MatchState.Rally);
         return true;
@@ -103,16 +94,10 @@ public class MatchManager : MonoBehaviour
             return false;
         }
 
-        if (team != CurrentTouchTeam)
-        {
-            CurrentTouchTeam = team;
-            CurrentTouchCount = 0;
-        }
-
-        CurrentTouchCount++;
+        rally.RecordTouch(team);
         matchStats.RecordTouch(actor, action);
 
-        if (CurrentTouchCount > 3)
+        if (rally.CurrentTouchCount > 3)
         {
             ScorePoint(GetOppositeTeam(team));
             return false;
@@ -120,9 +105,7 @@ public class MatchManager : MonoBehaviour
 
         if (action == BallTouchAction.Spike)
         {
-            lastAttackTeam = team;
-            lastAttackActor = actor;
-            hasLastAttackTeam = true;
+            rally.RecordAttack(team, actor);
         }
 
         return true;
@@ -130,13 +113,13 @@ public class MatchManager : MonoBehaviour
 
     public void RegisterAttackLanding(bool isIn)
     {
-        if (CurrentState != MatchState.Rally || !hasLastAttackTeam)
+        if (CurrentState != MatchState.Rally || !rally.HasLastAttackTeam)
         {
             return;
         }
 
-        matchStats.RecordAttackResult(lastAttackActor, isIn);
-        ScorePoint(isIn ? lastAttackTeam : GetOppositeTeam(lastAttackTeam));
+        matchStats.RecordAttackResult(rally.LastAttackActor, isIn);
+        ScorePoint(isIn ? rally.LastAttackTeam : GetOppositeTeam(rally.LastAttackTeam));
     }
 
     public void RegisterNetCross(TeamSide fromTeam, TeamSide toTeam)
@@ -146,12 +129,12 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        if (CurrentTouchTeam != fromTeam)
+        if (rally.CurrentTouchTeam != fromTeam)
         {
             return;
         }
 
-        ReceivingTeam = toTeam;
+        rally.SetReceivingTeam(toTeam);
     }
 
     public void ScorePoint(TeamSide scoringTeam)
@@ -229,7 +212,7 @@ public class MatchManager : MonoBehaviour
         GUILayout.Label($"Serving: {servingTeam}");
         GUILayout.Label($"Receiving: {ReceivingTeam}");
         GUILayout.Label($"Touch: {CurrentTouchTeam} x {CurrentTouchCount}");
-        GUILayout.Label($"Last Attack: {(hasLastAttackTeam ? lastAttackTeam.ToString() : "None")}");
+        GUILayout.Label($"Last Attack: {(rally.HasLastAttackTeam ? rally.LastAttackTeam.ToString() : "None")}");
 
         if (careerCalendarManager != null)
         {
