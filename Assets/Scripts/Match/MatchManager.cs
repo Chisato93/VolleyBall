@@ -174,6 +174,7 @@ public class MatchManager : MonoBehaviour
         TeamSide previousServingTeam = ServingTeam;
         score.ScorePoint(scoringTeam);
         rotations.ApplyPointResult(previousServingTeam, ServingTeam);
+        rotations.RestoreFormation();
         bool isMatchOver = IsMatchOver();
         UpdateStateAfterPoint(isMatchOver);
         StopBall();

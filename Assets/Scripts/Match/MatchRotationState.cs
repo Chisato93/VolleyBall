@@ -29,6 +29,12 @@ internal sealed class MatchRotationState
         GetTeamRotation(nextServingTeam).RotateClockwise();
     }
 
+    public void RestoreFormation()
+    {
+        playerRotation.ApplyFormation();
+        opponentRotation.ApplyFormation();
+    }
+
     public bool CanServe(TeamSide team, CharacterRole actor)
     {
         if (team != servingTeam)
@@ -199,7 +205,7 @@ internal sealed class MatchRotationState
             }
         }
 
-        private void ApplyFormation()
+        public void ApplyFormation()
         {
             if (!hasFormation)
             {
@@ -215,7 +221,20 @@ internal sealed class MatchRotationState
                 }
 
                 role.transform.SetPositionAndRotation(slotPositions[i], slotRotations[i]);
+                StopRole(role);
             }
+        }
+
+        private static void StopRole(CharacterRole role)
+        {
+            Rigidbody body = role.GetComponent<Rigidbody>();
+            if (body == null)
+            {
+                return;
+            }
+
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
         }
     }
 }
