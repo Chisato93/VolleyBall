@@ -11,6 +11,7 @@ public class MatchManager : MonoBehaviour
     [SerializeField] private float nextServeDelay = 1.2f;
 #if UNITY_EDITOR
     [SerializeField] private bool showDebugGui = true;
+    [SerializeField] private PlayerActionController playerActionController;
 #endif
     [SerializeField] private CareerCalendarManager careerCalendarManager;
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
@@ -65,6 +66,13 @@ public class MatchManager : MonoBehaviour
         {
             gameFlowManager = FindFirstObjectByType<GameFlowManager>();
         }
+
+#if UNITY_EDITOR
+        if (playerActionController == null)
+        {
+            playerActionController = FindFirstObjectByType<PlayerActionController>();
+        }
+#endif
     }
 
     private void StartMatchIfNeeded()
@@ -222,7 +230,7 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        GUILayout.BeginArea(new Rect(10f, 10f, 220f, 290f), GUI.skin.box);
+        GUILayout.BeginArea(new Rect(10f, 10f, 260f, 315f), GUI.skin.box);
         GUILayout.Label($"State: {CurrentState}");
         GUILayout.Label($"Score: Player {PlayerScore} - {OpponentScore} Opponent");
         GUILayout.Label($"Serving: {ServingTeam}");
@@ -230,6 +238,7 @@ public class MatchManager : MonoBehaviour
         GUILayout.Label($"Receiving: {ReceivingTeam}");
         GUILayout.Label($"Touch: {CurrentTouchTeam} x {CurrentTouchCount}");
         GUILayout.Label($"Last Attack: {(rally.HasLastAttackTeam ? rally.LastAttackTeam.ToString() : "None")}");
+        GUILayout.Label($"Last Action Failure: {GetLastActionFailureDebugText()}");
 
         if (careerCalendarManager != null)
         {
@@ -321,6 +330,21 @@ public class MatchManager : MonoBehaviour
         }
 
         return server.name;
+    }
+
+    private string GetLastActionFailureDebugText()
+    {
+        if (playerActionController == null)
+        {
+            playerActionController = FindFirstObjectByType<PlayerActionController>();
+        }
+
+        if (playerActionController == null || string.IsNullOrWhiteSpace(playerActionController.LastActionFailure))
+        {
+            return "None";
+        }
+
+        return playerActionController.LastActionFailure;
     }
 #endif
 

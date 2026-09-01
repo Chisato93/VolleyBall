@@ -9,13 +9,13 @@ public class PlayerActionController : MonoBehaviour
     [SerializeField] private float serveForwardSpeed = 8f;
     [SerializeField] private float serveUpSpeed = 4f;
     [SerializeField] private Vector3 serveSpawnOffset = new Vector3(0f, 1.2f, 1f);
-    [SerializeField] private float spikeRange = 2f;
+    [SerializeField] private float spikeRange = 2.5f;
     [SerializeField] private float minSpikeHeight = 2f;
     [SerializeField] private float maxSpikeHeight = 6f;
     [SerializeField] private float spikeForwardSpeed = 8f;
     [SerializeField] private float spikeDownSpeed = 3f;
     [SerializeField] private float spikeCooldown = 0.75f;
-    [SerializeField] private float receiveRange = 1.5f;
+    [SerializeField] private float receiveRange = 2.2f;
     [SerializeField] private float maxReceiveHeight = 2.5f;
     [SerializeField] private float receiveForwardSpeed = 5f;
     [SerializeField] private float receiveUpSpeed = 4f;
@@ -37,6 +37,9 @@ public class PlayerActionController : MonoBehaviour
     private float nextReceiveTime;
     private float nextSetTime;
     private float nextSpikeTime;
+    private string lastActionFailure = "";
+
+    public string LastActionFailure => lastActionFailure;
 
     private void Awake()
     {
@@ -74,23 +77,34 @@ public class PlayerActionController : MonoBehaviour
 
     public void HandleActionQ()
     {
+        lastActionFailure = "";
+
         if (TryServe())
+        {
+            ClearActionFailure();
+            return;
+        }
+
+        if (matchManager != null && matchManager.CurrentState == MatchState.ServeReady)
         {
             return;
         }
 
         if (TryReceive())
         {
+            ClearActionFailure();
             return;
         }
 
         if (TrySet())
         {
+            ClearActionFailure();
             return;
         }
 
         if (TrySpike())
         {
+            ClearActionFailure();
             return;
         }
 
@@ -104,27 +118,50 @@ public class PlayerActionController : MonoBehaviour
         TeamSide currentTeamSide = GetTeamSide();
         if (!CanUseRallyAction())
         {
+            SetActionFailure("Receive failed: rally is not active.");
             return false;
         }
 
-        if (matchManager.CurrentTouchTeam == currentTeamSide || matchManager.ReceivingTeam != currentTeamSide)
+        if (matchManager.CurrentTouchTeam == currentTeamSide)
         {
+            SetActionFailure("Receive failed: your team touched last.");
             return false;
         }
 
-        if (Time.time < nextReceiveTime || ball == null || ball.position.y > maxReceiveHeight)
+        if (matchManager.ReceivingTeam != currentTeamSide && !IsBallOnTeamCourt(currentTeamSide))
         {
+            SetActionFailure("Receive failed: ball is not on your court.");
+            return false;
+        }
+
+        if (Time.time < nextReceiveTime)
+        {
+            SetActionFailure("Receive failed: cooldown.");
+            return false;
+        }
+
+        if (ball == null)
+        {
+            SetActionFailure("Receive failed: ball not found.");
+            return false;
+        }
+
+        if (ball.position.y > maxReceiveHeight)
+        {
+            SetActionFailure("Receive failed: ball is too high.");
             return false;
         }
 
         if (GetXzDistance(transform.position, ball.position) > receiveRange)
         {
+            SetActionFailure("Receive failed: ball is too far.");
             return false;
         }
 
         Rigidbody ballBody = GetBallRigidbody();
         if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Receive, characterRole))
         {
+            SetActionFailure("Receive failed: touch was rejected.");
             return false;
         }
 
@@ -142,32 +179,38 @@ public class PlayerActionController : MonoBehaviour
         TeamSide currentTeamSide = GetTeamSide();
         if (!CanUseRallyAction())
         {
+            SetActionFailure("Set failed: rally is not active.");
             return false;
         }
 
         if (matchManager.CurrentTouchTeam != currentTeamSide || matchManager.ReceivingTeam != currentTeamSide)
         {
+            SetActionFailure("Set failed: your team cannot set now.");
             return false;
         }
 
         if (matchManager.CurrentTouchCount != 1)
         {
+            SetActionFailure($"Set failed: touch count is {matchManager.CurrentTouchCount}.");
             return false;
         }
 
         if (Time.time < nextSetTime || ball == null || ball.position.y < minSetHeight || ball.position.y > maxSetHeight)
         {
+            SetActionFailure("Set failed: timing or height is wrong.");
             return false;
         }
 
         if (GetXzDistance(transform.position, ball.position) > setRange)
         {
+            SetActionFailure("Set failed: ball is too far.");
             return false;
         }
 
         Rigidbody ballBody = GetBallRigidbody();
         if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Set, characterRole))
         {
+            SetActionFailure("Set failed: touch was rejected.");
             return false;
         }
 
@@ -189,37 +232,44 @@ public class PlayerActionController : MonoBehaviour
         TeamSide currentTeamSide = GetTeamSide();
         if (ball == null)
         {
+            SetActionFailure("Spike failed: ball not found.");
             return false;
         }
 
         if (!CanUseRallyAction())
         {
+            SetActionFailure("Spike failed: rally is not active.");
             return false;
         }
 
         if (matchManager.CurrentTouchTeam != currentTeamSide || matchManager.ReceivingTeam != currentTeamSide)
         {
+            SetActionFailure("Spike failed: your team cannot spike now.");
             return false;
         }
 
-        if (matchManager.CurrentTouchCount != 2)
+        if (matchManager.CurrentTouchCount < 2 || matchManager.CurrentTouchCount > 3)
         {
+            SetActionFailure($"Spike failed: touch count is {matchManager.CurrentTouchCount}.");
             return false;
         }
 
         if (Time.time < nextSpikeTime || ball.position.y < minSpikeHeight || ball.position.y > maxSpikeHeight)
         {
+            SetActionFailure("Spike failed: timing or height is wrong.");
             return false;
         }
 
         if (!IsBallInSpikeRange())
         {
+            SetActionFailure("Spike failed: ball is too far.");
             return false;
         }
 
         Rigidbody ballBody = GetBallRigidbody();
         if (ballBody == null || !matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Spike, characterRole))
         {
+            SetActionFailure("Spike failed: touch was rejected.");
             return false;
         }
 
@@ -244,12 +294,18 @@ public class PlayerActionController : MonoBehaviour
         TeamSide currentTeamSide = GetTeamSide();
         if (matchManager == null || !matchManager.CanServe(currentTeamSide, characterRole))
         {
+            if (matchManager != null && matchManager.CurrentState == MatchState.ServeReady)
+            {
+                SetActionFailure("Serve failed: this player is not the server.");
+            }
+
             return false;
         }
 
         Rigidbody ballBody = GetBallRigidbody();
         if (ballBody == null)
         {
+            SetActionFailure("Serve failed: ball not found.");
             return false;
         }
 
@@ -318,6 +374,26 @@ public class PlayerActionController : MonoBehaviour
     private TeamSide GetTeamSide()
     {
         return characterRole != null ? characterRole.TeamSide : teamSide;
+    }
+
+    private bool IsBallOnTeamCourt(TeamSide currentTeamSide)
+    {
+        if (ball == null)
+        {
+            return false;
+        }
+
+        return currentTeamSide == TeamSide.Player ? ball.position.z <= 0f : ball.position.z >= 0f;
+    }
+
+    private void SetActionFailure(string message)
+    {
+        lastActionFailure = message;
+    }
+
+    private void ClearActionFailure()
+    {
+        lastActionFailure = "";
     }
 
     private static Vector3 GetReceiveDirection(TeamSide currentTeamSide)
