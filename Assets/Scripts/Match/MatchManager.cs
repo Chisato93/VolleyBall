@@ -3,6 +3,12 @@ using UnityEngine;
 public class MatchManager : MonoBehaviour
 {
     [SerializeField] private int targetScore = 11;
+    [SerializeField] private string ballName = "volleyball";
+    [SerializeField] private float autoServeDelay = 1.2f;
+    [SerializeField] private float autoServeForwardSpeed = 8f;
+    [SerializeField] private float autoServeUpSpeed = 4f;
+    [SerializeField] private Vector3 autoServeSpawnOffset = new Vector3(0f, 1.2f, 1f);
+    [SerializeField] private float nextServeDelay = 1.2f;
 #if UNITY_EDITOR
     [SerializeField] private bool showDebugGui = true;
 #endif
@@ -19,11 +25,13 @@ public class MatchManager : MonoBehaviour
     public int OpponentScore => score.OpponentScore;
     public int TargetScore => targetScore;
     public MatchStats CurrentMatchStats => matchStats;
+    public CharacterRole CurrentServer => rotations.CurrentServer;
 
     private readonly MatchEndState matchEnd = new MatchEndState();
     private readonly MatchScoreState score = new MatchScoreState();
     private readonly RallyState rally = new RallyState();
     private readonly MatchStats matchStats = new MatchStats();
+    private readonly MatchRotationState rotations = new MatchRotationState();
 
     private void Awake()
     {
@@ -69,7 +77,10 @@ public class MatchManager : MonoBehaviour
 
     public void StartMatch()
     {
+        CancelInvoke(nameof(ResetRally));
+        CancelInvoke(nameof(AutoServeCurrentServer));
         score.Reset(targetScore, TeamSide.Player);
+        rotations.Reset(score.ServingTeam);
         matchEnd.Reset();
         matchStats.Reset();
         StartServe();
@@ -77,13 +88,16 @@ public class MatchManager : MonoBehaviour
 
     public void StartServe()
     {
+        CancelInvoke(nameof(ResetRally));
+        CancelInvoke(nameof(AutoServeCurrentServer));
         rally.ResetForServe(ServingTeam, GetOppositeTeam(ServingTeam));
         ChangeState(MatchState.ServeReady);
+        ScheduleAutoServeIfNeeded();
     }
 
     public bool BallServed(TeamSide team, CharacterRole actor = null)
     {
-        if (CurrentState != MatchState.ServeReady || team != ServingTeam)
+        if (CurrentState != MatchState.ServeReady || !rotations.CanServe(team, actor))
         {
             return false;
         }
@@ -123,15 +137,16 @@ public class MatchManager : MonoBehaviour
         return true;
     }
 
-    public void RegisterAttackLanding(bool isIn)
+    public void RegisterBallLanding(bool isIn, TeamSide landingTeam)
     {
-        if (CurrentState != MatchState.Rally || !rally.HasLastAttackTeam)
+        if (CurrentState != MatchState.Rally)
         {
             return;
         }
 
-        matchStats.RecordAttackResult(rally.LastAttackActor, isIn);
-        ScorePoint(isIn ? rally.LastAttackTeam : GetOppositeTeam(rally.LastAttackTeam));
+        TeamSide scoringTeam = GetLandingScoringTeam(isIn, landingTeam);
+        RecordAttackResultIfNeeded(scoringTeam);
+        ScorePoint(scoringTeam);
     }
 
     public void RegisterNetCross(TeamSide fromTeam, TeamSide toTeam)
@@ -156,15 +171,21 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
+        TeamSide previousServingTeam = ServingTeam;
         score.ScorePoint(scoringTeam);
+        rotations.ApplyPointResult(previousServingTeam, ServingTeam);
         bool isMatchOver = IsMatchOver();
         UpdateStateAfterPoint(isMatchOver);
+        StopBall();
         SaveFinalScore();
 
         if (isMatchOver)
         {
             HandleMatchOver();
+            return;
         }
+
+        Invoke(nameof(ResetRally), nextServeDelay);
     }
 
     public void ResetRally()
@@ -180,6 +201,11 @@ public class MatchManager : MonoBehaviour
     public bool CanServe(TeamSide team)
     {
         return CurrentState == MatchState.ServeReady && team == ServingTeam;
+    }
+
+    public bool CanServe(TeamSide team, CharacterRole actor)
+    {
+        return CurrentState == MatchState.ServeReady && rotations.CanServe(team, actor);
     }
 
     public bool CanPlayRallyAction()
@@ -199,6 +225,7 @@ public class MatchManager : MonoBehaviour
         GUILayout.Label($"State: {CurrentState}");
         GUILayout.Label($"Score: Player {PlayerScore} - {OpponentScore} Opponent");
         GUILayout.Label($"Serving: {ServingTeam}");
+        GUILayout.Label($"Server: {GetServerDebugName()}");
         GUILayout.Label($"Receiving: {ReceivingTeam}");
         GUILayout.Label($"Touch: {CurrentTouchTeam} x {CurrentTouchCount}");
         GUILayout.Label($"Last Attack: {(rally.HasLastAttackTeam ? rally.LastAttackTeam.ToString() : "None")}");
@@ -278,11 +305,47 @@ public class MatchManager : MonoBehaviour
                 break;
         }
     }
+
+    private string GetServerDebugName()
+    {
+        CharacterRole server = CurrentServer;
+        if (server == null)
+        {
+            return "None";
+        }
+
+        if (server.PlayerData != null && !string.IsNullOrWhiteSpace(server.PlayerData.PlayerName))
+        {
+            return server.PlayerData.PlayerName;
+        }
+
+        return server.name;
+    }
 #endif
 
     private bool IsMatchOver()
     {
         return score.IsMatchOver();
+    }
+
+    private TeamSide GetLandingScoringTeam(bool isIn, TeamSide landingTeam)
+    {
+        if (!isIn)
+        {
+            return GetOppositeTeam(CurrentTouchTeam);
+        }
+
+        return landingTeam == ReceivingTeam ? CurrentTouchTeam : GetOppositeTeam(CurrentTouchTeam);
+    }
+
+    private void RecordAttackResultIfNeeded(TeamSide scoringTeam)
+    {
+        if (!rally.HasLastAttackTeam)
+        {
+            return;
+        }
+
+        matchStats.RecordAttackResult(rally.LastAttackActor, scoringTeam == rally.LastAttackTeam);
     }
 
     private void UpdateStateAfterPoint(bool isMatchOver)
@@ -297,8 +360,67 @@ public class MatchManager : MonoBehaviour
 
     private void HandleMatchOver()
     {
+        CancelInvoke(nameof(ResetRally));
+        CancelInvoke(nameof(AutoServeCurrentServer));
         AdvanceCareerCalendarAfterMatch();
         ShowMatchEndResult();
+    }
+
+    private void StopBall()
+    {
+        Rigidbody ballBody = GetBallRigidbody();
+        if (ballBody == null)
+        {
+            return;
+        }
+
+        ballBody.linearVelocity = Vector3.zero;
+        ballBody.angularVelocity = Vector3.zero;
+        ballBody.Sleep();
+    }
+
+    private void ScheduleAutoServeIfNeeded()
+    {
+        CharacterRole server = CurrentServer;
+        if (server == null || server.GetComponent<Player>() != null)
+        {
+            return;
+        }
+
+        Invoke(nameof(AutoServeCurrentServer), autoServeDelay);
+    }
+
+    private void AutoServeCurrentServer()
+    {
+        CharacterRole server = CurrentServer;
+        if (server == null || CurrentState != MatchState.ServeReady)
+        {
+            return;
+        }
+
+        Rigidbody ballBody = GetBallRigidbody();
+        if (ballBody == null)
+        {
+            return;
+        }
+
+        Vector3 serveDirection = ServingTeam == TeamSide.Player ? Vector3.forward : Vector3.back;
+        Vector3 spawnPosition = server.transform.position
+            + server.transform.right * autoServeSpawnOffset.x
+            + Vector3.up * autoServeSpawnOffset.y
+            + serveDirection * autoServeSpawnOffset.z;
+
+        ballBody.position = spawnPosition;
+        ballBody.linearVelocity = Vector3.zero;
+        ballBody.angularVelocity = Vector3.zero;
+        ballBody.linearVelocity = serveDirection * autoServeForwardSpeed + Vector3.up * autoServeUpSpeed;
+        BallServed(ServingTeam, server);
+    }
+
+    private Rigidbody GetBallRigidbody()
+    {
+        GameObject ballObject = GameObject.Find(ballName);
+        return ballObject != null ? ballObject.GetComponent<Rigidbody>() : null;
     }
 
     private void AdvanceCareerCalendarAfterMatch()

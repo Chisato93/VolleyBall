@@ -28,8 +28,9 @@ public class BallLandingJudge : MonoBehaviour
         Vector3 ballPosition = collision.transform.position;
         bool isIn = Mathf.Abs(ballPosition.x) <= courtHalfWidth
             && Mathf.Abs(ballPosition.z) <= courtHalfLength;
+        TeamSide landingTeam = GetLandingTeam(ballPosition);
 
-        matchManager.RegisterAttackLanding(isIn);
+        matchManager.RegisterBallLanding(isIn, landingTeam);
     }
 
     private void EnsureReferences()
@@ -48,5 +49,10 @@ public class BallLandingJudge : MonoBehaviour
         }
 
         return other.name == ballName;
+    }
+
+    private static TeamSide GetLandingTeam(Vector3 ballPosition)
+    {
+        return ballPosition.z >= 0f ? TeamSide.Opponent : TeamSide.Player;
     }
 }

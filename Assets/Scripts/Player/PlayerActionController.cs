@@ -242,7 +242,7 @@ public class PlayerActionController : MonoBehaviour
         EnsureReferences();
 
         TeamSide currentTeamSide = GetTeamSide();
-        if (matchManager == null || !matchManager.CanServe(currentTeamSide))
+        if (matchManager == null || !matchManager.CanServe(currentTeamSide, characterRole))
         {
             return false;
         }
