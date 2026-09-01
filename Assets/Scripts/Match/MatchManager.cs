@@ -147,24 +147,12 @@ public class MatchManager : MonoBehaviour
 
         score.ScorePoint(scoringTeam);
         bool isMatchOver = IsMatchOver();
-        ChangeState(isMatchOver ? MatchState.MatchOver : MatchState.PointScored);
-        matchStats.SetFinalScore(PlayerScore, OpponentScore);
+        UpdateStateAfterPoint(isMatchOver);
+        SaveFinalScore();
 
-        if (isMatchOver && matchEnd.TryMarkCareerCalendarAdvanced())
+        if (isMatchOver)
         {
-            careerCalendarManager.AdvanceAfterMatch();
-        }
-
-        if (isMatchOver && matchEnd.TryMarkTrainingSelectionShown())
-        {
-            if (gameFlowManager != null)
-            {
-                gameFlowManager.OnMatchEnded();
-            }
-            else if (trainingSelectionUI != null)
-            {
-                trainingSelectionUI.ShowRandomOptions();
-            }
+            HandleMatchOver();
         }
     }
 
@@ -282,6 +270,52 @@ public class MatchManager : MonoBehaviour
     private bool IsMatchOver()
     {
         return score.IsMatchOver();
+    }
+
+    private void UpdateStateAfterPoint(bool isMatchOver)
+    {
+        ChangeState(isMatchOver ? MatchState.MatchOver : MatchState.PointScored);
+    }
+
+    private void SaveFinalScore()
+    {
+        matchStats.SetFinalScore(PlayerScore, OpponentScore);
+    }
+
+    private void HandleMatchOver()
+    {
+        AdvanceCareerCalendarAfterMatch();
+        ShowMatchEndResult();
+    }
+
+    private void AdvanceCareerCalendarAfterMatch()
+    {
+        if (!matchEnd.TryMarkCareerCalendarAdvanced())
+        {
+            return;
+        }
+
+        if (careerCalendarManager != null)
+        {
+            careerCalendarManager.AdvanceAfterMatch();
+        }
+    }
+
+    private void ShowMatchEndResult()
+    {
+        if (!matchEnd.TryMarkTrainingSelectionShown())
+        {
+            return;
+        }
+
+        if (gameFlowManager != null)
+        {
+            gameFlowManager.OnMatchEnded();
+        }
+        else if (trainingSelectionUI != null)
+        {
+            trainingSelectionUI.ShowRandomOptions();
+        }
     }
 
     private static TeamSide GetOppositeTeam(TeamSide team)
