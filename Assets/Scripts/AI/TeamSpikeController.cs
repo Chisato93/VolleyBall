@@ -42,7 +42,7 @@ public class TeamSpikeController : MonoBehaviour
             return;
         }
 
-        MoveAttackerTowardBall(attacker.transform);
+        MoveAttackerTowardBall(attacker);
         TrySpike(attacker);
     }
 
@@ -127,14 +127,16 @@ public class TeamSpikeController : MonoBehaviour
         return nearestAttacker != null ? nearestAttacker : nearest;
     }
 
-    private void MoveAttackerTowardBall(Transform attackerTransform)
+    private void MoveAttackerTowardBall(CharacterRole currentAttacker)
     {
+        Transform attackerTransform = currentAttacker.transform;
         Vector3 currentPosition = attackerTransform.position;
         Vector3 targetPosition = new Vector3(ball.position.x, currentPosition.y, ball.position.z);
+        float currentMoveSpeed = CharacterActionStatCalculator.GetMoveSpeed(currentAttacker, moveSpeed);
         Vector3 nextPosition = Vector3.MoveTowards(
             currentPosition,
             targetPosition,
-            moveSpeed * Time.deltaTime);
+            currentMoveSpeed * Time.deltaTime);
         attackerTransform.position = ClampToOwnCourt(nextPosition);
 
         Vector3 lookDirection = targetPosition - currentPosition;
@@ -153,12 +155,12 @@ public class TeamSpikeController : MonoBehaviour
             return;
         }
 
-        if (ball.position.y < minSpikeHeight || ball.position.y > maxSpikeHeight)
+        if (ball.position.y < minSpikeHeight || ball.position.y > CharacterActionStatCalculator.GetSpikeMaxHeight(currentAttacker, maxSpikeHeight))
         {
             return;
         }
 
-        if (GetXzDistance(currentAttacker.transform.position, ball.position) > spikeRange)
+        if (GetXzDistance(currentAttacker.transform.position, ball.position) > CharacterActionStatCalculator.GetSpikeRange(currentAttacker, spikeRange))
         {
             return;
         }
@@ -168,7 +170,9 @@ public class TeamSpikeController : MonoBehaviour
             return;
         }
 
-        ballBody.linearVelocity = GetAttackDirection() * spikeForwardSpeed + Vector3.down * spikeDownSpeed;
+        float currentSpikeForwardSpeed = CharacterActionStatCalculator.GetSpikeForwardSpeed(currentAttacker, spikeForwardSpeed);
+        float currentSpikeDownSpeed = CharacterActionStatCalculator.GetSpikeDownSpeed(currentAttacker, spikeDownSpeed);
+        ballBody.linearVelocity = GetAttackDirection() * currentSpikeForwardSpeed + Vector3.down * currentSpikeDownSpeed;
         ballBody.angularVelocity = Vector3.zero;
         nextSpikeTime = Time.time + spikeCooldown;
     }

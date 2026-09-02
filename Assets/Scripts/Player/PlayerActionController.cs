@@ -3,9 +3,6 @@ using UnityEngine;
 [RequireComponent(typeof(SpikeTargetingController))]
 public class PlayerActionController : MonoBehaviour
 {
-    private const float MinSetStatUpSpeed = 7f;
-    private const float MaxSetStatUpSpeed = 9f;
-
     [SerializeField] private Transform ball;
     [SerializeField] private MatchManager matchManager;
     [SerializeField] private TeamSide teamSide = TeamSide.Player;
@@ -194,13 +191,13 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        if (ball.position.y > maxReceiveHeight)
+        if (ball.position.y > CharacterActionStatCalculator.GetReceiveMaxHeight(characterRole, maxReceiveHeight))
         {
             SetActionFailure("Receive failed: ball is too high.");
             return false;
         }
 
-        if (GetXzDistance(transform.position, ball.position) > receiveRange)
+        if (GetXzDistance(transform.position, ball.position) > CharacterActionStatCalculator.GetReceiveRange(characterRole, receiveRange))
         {
             SetActionFailure("Receive failed: ball is too far.");
             return false;
@@ -213,7 +210,8 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        ballBody.linearVelocity = GetReceiveDirection(currentTeamSide) * receiveForwardSpeed + Vector3.up * receiveUpSpeed;
+        float currentReceiveForwardSpeed = CharacterActionStatCalculator.GetReceiveForwardSpeed(characterRole, receiveForwardSpeed);
+        ballBody.linearVelocity = GetReceiveDirection(currentTeamSide) * currentReceiveForwardSpeed + Vector3.up * receiveUpSpeed;
         ballBody.angularVelocity = Vector3.zero;
         nextReceiveTime = Time.time + receiveCooldown;
         ShowActionCamera();
@@ -308,7 +306,9 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        if (Time.time < nextSpikeTime || ball.position.y < minSpikeHeight || ball.position.y > maxSpikeHeight)
+        if (Time.time < nextSpikeTime
+            || ball.position.y < minSpikeHeight
+            || ball.position.y > CharacterActionStatCalculator.GetSpikeMaxHeight(characterRole, maxSpikeHeight))
         {
             SetActionFailure("Spike failed: timing or height is wrong.");
             return false;
@@ -327,7 +327,9 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        ballBody.linearVelocity = GetAttackDirection(currentTeamSide) * spikeForwardSpeed + Vector3.down * spikeDownSpeed;
+        float currentSpikeForwardSpeed = CharacterActionStatCalculator.GetSpikeForwardSpeed(characterRole, spikeForwardSpeed);
+        float currentSpikeDownSpeed = CharacterActionStatCalculator.GetSpikeDownSpeed(characterRole, spikeDownSpeed);
+        ballBody.linearVelocity = GetAttackDirection(currentTeamSide) * currentSpikeForwardSpeed + Vector3.down * currentSpikeDownSpeed;
         ballBody.angularVelocity = Vector3.zero;
         nextSpikeTime = Time.time + spikeCooldown;
         ShowActionCamera();
@@ -371,7 +373,9 @@ public class PlayerActionController : MonoBehaviour
         ballBody.position = spawnPosition;
         ballBody.linearVelocity = Vector3.zero;
         ballBody.angularVelocity = Vector3.zero;
-        ballBody.linearVelocity = transform.forward * serveForwardSpeed + Vector3.up * serveUpSpeed;
+        float currentServeForwardSpeed = CharacterActionStatCalculator.GetServeForwardSpeed(characterRole, serveForwardSpeed);
+        float currentServeUpSpeed = CharacterActionStatCalculator.GetServeUpSpeed(characterRole, serveUpSpeed);
+        ballBody.linearVelocity = transform.forward * currentServeForwardSpeed + Vector3.up * currentServeUpSpeed;
 
         bool served = matchManager.RegisterTouch(currentTeamSide, BallTouchAction.Serve, characterRole);
         if (served)
@@ -398,7 +402,7 @@ public class PlayerActionController : MonoBehaviour
         }
 
         Gizmos.color = IsBallInSpikeRange() ? spikeReadyColor : spikeRangeColor;
-        Gizmos.DrawWireSphere(transform.position, spikeRange);
+        Gizmos.DrawWireSphere(transform.position, GetCurrentSpikeRange());
     }
 
     private bool IsBallInSpikeRange()
@@ -410,7 +414,7 @@ public class PlayerActionController : MonoBehaviour
             targetBall = ballObject != null ? ballObject.transform : null;
         }
 
-        return targetBall != null && GetXzDistance(transform.position, targetBall.position) <= spikeRange;
+        return targetBall != null && GetXzDistance(transform.position, targetBall.position) <= GetCurrentSpikeRange();
     }
 
     private bool CanUseRallyAction()
@@ -481,14 +485,14 @@ public class PlayerActionController : MonoBehaviour
 
     private float GetSetUpSpeed(CharacterRole setter)
     {
-        if (setter == null || setter.Stats == null)
-        {
-            return GetRandomizedSetUpSpeed(setUpSpeed);
-        }
-
-        float statRatio = Mathf.Clamp01(setter.Stats.Set / 100f);
-        float statUpSpeed = Mathf.Lerp(MinSetStatUpSpeed, MaxSetStatUpSpeed, statRatio);
+        float statUpSpeed = CharacterActionStatCalculator.GetSetUpSpeed(setter, setUpSpeed);
         return GetRandomizedSetUpSpeed(statUpSpeed);
+    }
+
+    private float GetCurrentSpikeRange()
+    {
+        EnsureReferences();
+        return CharacterActionStatCalculator.GetSpikeRange(characterRole, spikeRange);
     }
 
     private float GetRandomizedSetUpSpeed(float baseUpSpeed)

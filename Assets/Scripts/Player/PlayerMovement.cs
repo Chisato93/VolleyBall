@@ -35,7 +35,8 @@ public class PlayerMovement : MonoBehaviour
             moveDirection.Normalize();
         }
 
-        Vector3 horizontalVelocity = GetCourtLimitedVelocity(moveDirection * moveSpeed);
+        float currentMoveSpeed = CharacterActionStatCalculator.GetMoveSpeed(characterRole, moveSpeed);
+        Vector3 horizontalVelocity = GetCourtLimitedVelocity(moveDirection * currentMoveSpeed);
         body.linearVelocity = new Vector3(horizontalVelocity.x, body.linearVelocity.y, horizontalVelocity.z);
 
         if (moveDirection.sqrMagnitude > 0.001f)
@@ -74,7 +75,8 @@ public class PlayerMovement : MonoBehaviour
             return false;
         }
 
-        body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        float currentJumpForce = CharacterActionStatCalculator.GetJumpForce(characterRole, jumpForce);
+        body.AddForce(Vector3.up * currentJumpForce, ForceMode.Impulse);
         return true;
     }
 

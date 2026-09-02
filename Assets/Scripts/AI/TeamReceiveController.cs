@@ -41,7 +41,7 @@ public class TeamReceiveController : MonoBehaviour
             return;
         }
 
-        MoveReceiverTowardBall(receiver.transform);
+        MoveReceiverTowardBall(receiver);
         TryReceive(receiver);
     }
 
@@ -113,14 +113,16 @@ public class TeamReceiveController : MonoBehaviour
         return nearest;
     }
 
-    private void MoveReceiverTowardBall(Transform receiverTransform)
+    private void MoveReceiverTowardBall(CharacterRole currentReceiver)
     {
+        Transform receiverTransform = currentReceiver.transform;
         Vector3 currentPosition = receiverTransform.position;
         Vector3 targetPosition = new Vector3(ball.position.x, currentPosition.y, ball.position.z);
+        float currentMoveSpeed = CharacterActionStatCalculator.GetMoveSpeed(currentReceiver, moveSpeed);
         Vector3 nextPosition = Vector3.MoveTowards(
             currentPosition,
             targetPosition,
-            moveSpeed * Time.deltaTime);
+            currentMoveSpeed * Time.deltaTime);
         receiverTransform.position = ClampToOwnCourt(nextPosition);
 
         Vector3 lookDirection = targetPosition - currentPosition;
@@ -139,12 +141,12 @@ public class TeamReceiveController : MonoBehaviour
             return;
         }
 
-        if (ball.position.y > maxReceiveHeight)
+        if (ball.position.y > CharacterActionStatCalculator.GetReceiveMaxHeight(currentReceiver, maxReceiveHeight))
         {
             return;
         }
 
-        if (GetXzDistance(currentReceiver.transform.position, ball.position) > receiveRange)
+        if (GetXzDistance(currentReceiver.transform.position, ball.position) > CharacterActionStatCalculator.GetReceiveRange(currentReceiver, receiveRange))
         {
             return;
         }
@@ -154,7 +156,8 @@ public class TeamReceiveController : MonoBehaviour
             return;
         }
 
-        ballBody.linearVelocity = GetReceiveDirection() * receiveForwardSpeed + Vector3.up * receiveUpSpeed;
+        float currentReceiveForwardSpeed = CharacterActionStatCalculator.GetReceiveForwardSpeed(currentReceiver, receiveForwardSpeed);
+        ballBody.linearVelocity = GetReceiveDirection() * currentReceiveForwardSpeed + Vector3.up * receiveUpSpeed;
         ballBody.angularVelocity = Vector3.zero;
         nextReceiveTime = Time.time + receiveCooldown;
     }

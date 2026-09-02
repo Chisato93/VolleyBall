@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class TeamSetController : MonoBehaviour
 {
-    private const float MinSetStatUpSpeed = 7f;
-    private const float MaxSetStatUpSpeed = 9f;
-
     [SerializeField] private TeamSide controlledTeam = TeamSide.Opponent;
     [SerializeField] private float moveSpeed = 4f;
     [SerializeField] private float trackingRange = 12f;
@@ -48,7 +45,7 @@ public class TeamSetController : MonoBehaviour
             return;
         }
 
-        MoveSetterTowardBall(setter.transform);
+        MoveSetterTowardBall(setter);
         TrySet(setter);
     }
 
@@ -133,14 +130,16 @@ public class TeamSetController : MonoBehaviour
         return nearestSetter != null ? nearestSetter : nearest;
     }
 
-    private void MoveSetterTowardBall(Transform setterTransform)
+    private void MoveSetterTowardBall(CharacterRole currentSetter)
     {
+        Transform setterTransform = currentSetter.transform;
         Vector3 currentPosition = setterTransform.position;
         Vector3 targetPosition = new Vector3(ball.position.x, currentPosition.y, ball.position.z);
+        float currentMoveSpeed = CharacterActionStatCalculator.GetMoveSpeed(currentSetter, moveSpeed);
         Vector3 nextPosition = Vector3.MoveTowards(
             currentPosition,
             targetPosition,
-            moveSpeed * Time.deltaTime);
+            currentMoveSpeed * Time.deltaTime);
         setterTransform.position = ClampToOwnCourt(nextPosition);
 
         Vector3 lookDirection = targetPosition - currentPosition;
@@ -238,13 +237,7 @@ public class TeamSetController : MonoBehaviour
 
     private float GetSetUpSpeed(CharacterRole currentSetter)
     {
-        if (currentSetter == null || currentSetter.Stats == null)
-        {
-            return GetRandomizedSetUpSpeed(setUpSpeed);
-        }
-
-        float statRatio = Mathf.Clamp01(currentSetter.Stats.Set / 100f);
-        float statUpSpeed = Mathf.Lerp(MinSetStatUpSpeed, MaxSetStatUpSpeed, statRatio);
+        float statUpSpeed = CharacterActionStatCalculator.GetSetUpSpeed(currentSetter, setUpSpeed);
         return GetRandomizedSetUpSpeed(statUpSpeed);
     }
 

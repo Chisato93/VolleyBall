@@ -443,7 +443,7 @@ public class MatchManager : MonoBehaviour
         ballBody.position = spawnPosition;
         ballBody.linearVelocity = Vector3.zero;
         ballBody.angularVelocity = Vector3.zero;
-        ballBody.linearVelocity = CalculateAutoServeVelocity(spawnPosition, targetPosition, serveDirection);
+        ballBody.linearVelocity = CalculateAutoServeVelocity(spawnPosition, targetPosition, serveDirection, server);
         BallServed(ServingTeam, server);
     }
 
@@ -453,15 +453,18 @@ public class MatchManager : MonoBehaviour
         return new Vector3(0f, autoServeTargetHeight, targetZ);
     }
 
-    private Vector3 CalculateAutoServeVelocity(Vector3 startPosition, Vector3 targetPosition, Vector3 fallbackDirection)
+    private Vector3 CalculateAutoServeVelocity(Vector3 startPosition, Vector3 targetPosition, Vector3 fallbackDirection, CharacterRole server)
     {
+        float currentServeForwardSpeed = CharacterActionStatCalculator.GetServeForwardSpeed(server, autoServeForwardSpeed);
+        float currentServeUpSpeed = CharacterActionStatCalculator.GetServeUpSpeed(server, autoServeUpSpeed);
         float gravity = Mathf.Abs(Physics.gravity.y);
         if (gravity <= 0.001f)
         {
-            return fallbackDirection * autoServeForwardSpeed + Vector3.up * autoServeUpSpeed;
+            return fallbackDirection * currentServeForwardSpeed + Vector3.up * currentServeUpSpeed;
         }
 
-        float heightAboveStart = Mathf.Max(autoServeArcHeight, targetPosition.y - startPosition.y + 0.1f);
+        float statArcHeight = currentServeUpSpeed * currentServeUpSpeed / (2f * gravity);
+        float heightAboveStart = Mathf.Max(autoServeArcHeight, statArcHeight, targetPosition.y - startPosition.y + 0.1f);
         float verticalSpeed = Mathf.Sqrt(2f * gravity * heightAboveStart);
         float peakY = startPosition.y + heightAboveStart;
         float fallDistance = Mathf.Max(0.1f, peakY - targetPosition.y);
