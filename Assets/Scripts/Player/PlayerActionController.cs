@@ -95,7 +95,48 @@ public class PlayerActionController : MonoBehaviour
             return;
         }
 
+        if (!CanUseRallyAction())
+        {
+            SetActionFailure("Action failed: rally is not active.");
+            return;
+        }
+
+        TeamSide currentTeamSide = GetTeamSide();
+        if (IsAttackSituation(currentTeamSide))
+        {
+            HandleAttackAction(isJumpActionSpikeInput);
+            return;
+        }
+
+        if (IsDefenseSituation(currentTeamSide))
+        {
+            HandleDefenseAction();
+            return;
+        }
+
+        SetActionFailure("Action failed: no valid action situation.");
+    }
+
+    private void HandleAttackAction(bool isJumpActionSpikeInput)
+    {
         if (isJumpActionSpikeInput && TrySpike())
+        {
+            ClearActionFailure();
+            return;
+        }
+
+        if (!isJumpActionSpikeInput && matchManager.CurrentTouchCount == 1 && TrySet())
+        {
+            ClearActionFailure();
+            return;
+        }
+
+        SetActionFailure("Attack failed: no valid attack action.");
+    }
+
+    private void HandleDefenseAction()
+    {
+        if (TryBlock())
         {
             ClearActionFailure();
             return;
@@ -107,13 +148,15 @@ public class PlayerActionController : MonoBehaviour
             return;
         }
 
-        if (TrySet())
+        if (matchManager.CurrentTouchTeam == GetTeamSide()
+            && matchManager.CurrentTouchCount == 1
+            && TrySet())
         {
             ClearActionFailure();
             return;
         }
 
-        TryBlock();
+        SetActionFailure("Defense failed: no valid defense action.");
     }
 
     private bool TryReceive()
@@ -385,6 +428,18 @@ public class PlayerActionController : MonoBehaviour
     private TeamSide GetTeamSide()
     {
         return characterRole != null ? characterRole.TeamSide : teamSide;
+    }
+
+    private bool IsAttackSituation(TeamSide currentTeamSide)
+    {
+        return matchManager.CurrentTouchTeam == currentTeamSide
+            && matchManager.ReceivingTeam == currentTeamSide;
+    }
+
+    private bool IsDefenseSituation(TeamSide currentTeamSide)
+    {
+        return matchManager.ReceivingTeam == currentTeamSide
+            || matchManager.CurrentTouchTeam != currentTeamSide;
     }
 
     private bool IsBallOnTeamCourt(TeamSide currentTeamSide)
