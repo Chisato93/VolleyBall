@@ -5,11 +5,14 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerActionController))]
 public class Player : MonoBehaviour
 {
+    private const float JumpActionSpikeWindow = 1f;
+
     private PlayerMovement movement;
     private PlayerInputManager input;
     private PlayerActionController actionController;
     private CharacterRole characterRole;
     private MatchManager matchManager;
+    private float lastJumpTime = -JumpActionSpikeWindow;
 
     private void Awake()
     {
@@ -40,7 +43,7 @@ public class Player : MonoBehaviour
 
         if (input.ActionQPressed)
         {
-            actionController.HandleActionQ();
+            actionController.HandleActionQ(IsJumpActionSpikeInput());
         }
     }
 
@@ -61,7 +64,15 @@ public class Player : MonoBehaviour
             return;
         }
 
-        movement.Jump();
+        if (movement.Jump())
+        {
+            lastJumpTime = Time.time;
+        }
+    }
+
+    private bool IsJumpActionSpikeInput()
+    {
+        return !movement.IsGroundedNow && Time.time <= lastJumpTime + JumpActionSpikeWindow;
     }
 
     private bool CanJump()

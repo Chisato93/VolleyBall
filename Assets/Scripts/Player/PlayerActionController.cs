@@ -75,7 +75,7 @@ public class PlayerActionController : MonoBehaviour
         }
     }
 
-    public void HandleActionQ()
+    public void HandleActionQ(bool isJumpActionSpikeInput = false)
     {
         lastActionFailure = "";
 
@@ -90,6 +90,12 @@ public class PlayerActionController : MonoBehaviour
             return;
         }
 
+        if (isJumpActionSpikeInput && TrySpike())
+        {
+            ClearActionFailure();
+            return;
+        }
+
         if (TryReceive())
         {
             ClearActionFailure();
@@ -97,12 +103,6 @@ public class PlayerActionController : MonoBehaviour
         }
 
         if (TrySet())
-        {
-            ClearActionFailure();
-            return;
-        }
-
-        if (TrySpike())
         {
             ClearActionFailure();
             return;
@@ -248,7 +248,13 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        if (matchManager.CurrentTouchCount < 2 || matchManager.CurrentTouchCount > 3)
+        if (matchManager.LastTouchAction != BallTouchAction.Set)
+        {
+            SetActionFailure($"Spike failed: last touch was {matchManager.LastTouchAction}.");
+            return false;
+        }
+
+        if (matchManager.CurrentTouchCount != 2)
         {
             SetActionFailure($"Spike failed: touch count is {matchManager.CurrentTouchCount}.");
             return false;

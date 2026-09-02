@@ -17,6 +17,8 @@ public class PlayerMovement : MonoBehaviour
     private CharacterRole characterRole;
     private Vector2 moveInput;
 
+    public bool IsGroundedNow => IsGrounded();
+
     private void Awake()
     {
         body = GetComponent<Rigidbody>();
@@ -65,14 +67,15 @@ public class PlayerMovement : MonoBehaviour
         body.MoveRotation(Quaternion.Slerp(body.rotation, targetRotation, turnSpeed * Time.fixedDeltaTime));
     }
 
-    public void Jump()
+    public bool Jump()
     {
         if (!IsGrounded())
         {
-            return;
+            return false;
         }
 
         body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        return true;
     }
 
     private bool IsGrounded()

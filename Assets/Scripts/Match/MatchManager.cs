@@ -25,6 +25,7 @@ public class MatchManager : MonoBehaviour
     public TeamSide ReceivingTeam => rally.ReceivingTeam;
     public TeamSide CurrentTouchTeam => rally.CurrentTouchTeam;
     public int CurrentTouchCount => rally.CurrentTouchCount;
+    public BallTouchAction LastTouchAction => rally.LastTouchAction;
     public int PlayerScore => score.PlayerScore;
     public int OpponentScore => score.OpponentScore;
     public int TargetScore => targetScore;
@@ -131,7 +132,7 @@ public class MatchManager : MonoBehaviour
             return false;
         }
 
-        rally.RecordTouch(team);
+        rally.RecordTouch(team, action);
         matchStats.RecordTouch(actor, action);
 
         if (rally.CurrentTouchCount > 3)
