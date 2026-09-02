@@ -3,6 +3,9 @@ using UnityEngine;
 [RequireComponent(typeof(SpikeTargetingController))]
 public class PlayerActionController : MonoBehaviour
 {
+    private const float MinSetStatUpSpeed = 7f;
+    private const float MaxSetStatUpSpeed = 9f;
+
     [SerializeField] private Transform ball;
     [SerializeField] private MatchManager matchManager;
     [SerializeField] private TeamSide teamSide = TeamSide.Player;
@@ -23,10 +26,12 @@ public class PlayerActionController : MonoBehaviour
     [SerializeField] private float setRange = 2f;
     [SerializeField] private float minSetHeight = 1f;
     [SerializeField] private float maxSetHeight = 5f;
-    [SerializeField] private float setForwardSpeed = 3f;
-    [SerializeField] private float setUpSpeed = 6f;
+    [SerializeField] private float setForwardSpeed = 1.4f;
+    [SerializeField] private float setUpSpeed = 8f;
     [SerializeField] private float setCooldown = 0.75f;
     [SerializeField] private float setNetFrontDistance = 1.5f;
+    [SerializeField] private float setTargetHeight = 2.6f;
+    [SerializeField] private float setUpSpeedRandomOffset = 0.3f;
     [SerializeField] private bool showSpikeRange = true;
     [SerializeField] private Color spikeRangeColor = new Color(0f, 0.75f, 1f, 0.7f);
     [SerializeField] private Color spikeReadyColor = new Color(0f, 1f, 0.25f, 0.9f);
@@ -214,11 +219,11 @@ public class PlayerActionController : MonoBehaviour
             return false;
         }
 
-        Vector3 setDirection = GetSetTarget(currentTeamSide) - ball.position;
+        Vector3 setDirection = GetSetTarget(characterRole, currentTeamSide) - ball.position;
         setDirection.y = 0f;
         setDirection = setDirection.sqrMagnitude > 0.001f ? setDirection.normalized : GetReceiveDirection(currentTeamSide);
 
-        ballBody.linearVelocity = setDirection * setForwardSpeed + Vector3.up * setUpSpeed;
+        ballBody.linearVelocity = setDirection * setForwardSpeed + Vector3.up * GetSetUpSpeed(characterRole);
         ballBody.angularVelocity = Vector3.zero;
         nextSetTime = Time.time + setCooldown;
         ShowActionCamera();
@@ -419,7 +424,60 @@ public class PlayerActionController : MonoBehaviour
         return Vector3.Distance(a, b);
     }
 
-    private Vector3 GetSetTarget(TeamSide currentTeamSide)
+    private float GetSetUpSpeed(CharacterRole setter)
+    {
+        if (setter == null || setter.Stats == null)
+        {
+            return GetRandomizedSetUpSpeed(setUpSpeed);
+        }
+
+        float statRatio = Mathf.Clamp01(setter.Stats.Set / 100f);
+        float statUpSpeed = Mathf.Lerp(MinSetStatUpSpeed, MaxSetStatUpSpeed, statRatio);
+        return GetRandomizedSetUpSpeed(statUpSpeed);
+    }
+
+    private float GetRandomizedSetUpSpeed(float baseUpSpeed)
+    {
+        float randomOffset = Random.Range(-setUpSpeedRandomOffset, setUpSpeedRandomOffset);
+        return Mathf.Max(0f, baseUpSpeed + randomOffset);
+    }
+
+    private Vector3 GetSetTarget(CharacterRole setter, TeamSide currentTeamSide)
+    {
+        CharacterRole targetAlly = FindNearestSetTarget(setter, currentTeamSide);
+        if (targetAlly != null)
+        {
+            return targetAlly.transform.position + Vector3.up * setTargetHeight;
+        }
+
+        return GetFallbackSetTarget(currentTeamSide);
+    }
+
+    private CharacterRole FindNearestSetTarget(CharacterRole setter, TeamSide currentTeamSide)
+    {
+        CharacterRole[] roles = FindObjectsByType<CharacterRole>(FindObjectsSortMode.None);
+        CharacterRole nearest = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (CharacterRole role in roles)
+        {
+            if (role == null || role == setter || role.TeamSide != currentTeamSide)
+            {
+                continue;
+            }
+
+            float distance = GetXzDistance(transform.position, role.transform.position);
+            if (distance <= nearestDistance)
+            {
+                nearest = role;
+                nearestDistance = distance;
+            }
+        }
+
+        return nearest;
+    }
+
+    private Vector3 GetFallbackSetTarget(TeamSide currentTeamSide)
     {
         float targetZ = currentTeamSide == TeamSide.Player ? -setNetFrontDistance : setNetFrontDistance;
         return new Vector3(0f, transform.position.y, targetZ);

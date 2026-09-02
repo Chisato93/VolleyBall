@@ -1305,10 +1305,12 @@ MonoBehaviour:
   setRange: 2
   minSetHeight: 1
   maxSetHeight: 5
-  setForwardSpeed: 3
-  setUpSpeed: 6
+  setForwardSpeed: 1.4
+  setUpSpeed: 8
   setCooldown: 0.75
   setNetFrontDistance: 1.5
+  setTargetHeight: 2.6
+  setUpSpeedRandomOffset: 0.3
 --- !u!114 &1455634437
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1327,10 +1329,12 @@ MonoBehaviour:
   setRange: 2
   minSetHeight: 1
   maxSetHeight: 5
-  setForwardSpeed: 3
-  setUpSpeed: 6
+  setForwardSpeed: 1.4
+  setUpSpeed: 8
   setCooldown: 0.75
   setNetFrontDistance: 1.5
+  setTargetHeight: 2.6
+  setUpSpeedRandomOffset: 0.3
 --- !u!114 &1455634438
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2290,10 +2294,12 @@ MonoBehaviour:
   setRange: 2
   minSetHeight: 1
   maxSetHeight: 5
-  setForwardSpeed: 3
-  setUpSpeed: 6
+  setForwardSpeed: 1.4
+  setUpSpeed: 8
   setCooldown: 0.75
   setNetFrontDistance: 1.5
+  setTargetHeight: 2.6
+  setUpSpeedRandomOffset: 0.3
   showSpikeRange: 1
   spikeRangeColor: {r: 0, g: 0.75, b: 1, a: 0.7}
   spikeReadyColor: {r: 0, g: 1, b: 0.25, a: 0.9}
