@@ -97,6 +97,17 @@ public class TrainingSelectionUI : MonoBehaviour
 
     private void SelectTraining(string trainingName)
     {
+        if (gameFlowManager != null)
+        {
+            gameFlowManager.PlayUiTransition(string.Empty, () => ApplySelectedTraining(trainingName));
+            return;
+        }
+
+        ApplySelectedTraining(trainingName);
+    }
+
+    private void ApplySelectedTraining(string trainingName)
+    {
         TrainingResult result = ApplyTraining(trainingName);
 
         if (result.Success && gameFlowManager != null)
@@ -149,12 +160,13 @@ public class TrainingSelectionUI : MonoBehaviour
 
     private void HandleResultClose()
     {
-        Hide();
-
         if (gameFlowManager != null)
         {
             gameFlowManager.CompleteTrainingAction();
+            return;
         }
+
+        Hide();
     }
 
     private void SetOptionButtonsActive(bool isActive)

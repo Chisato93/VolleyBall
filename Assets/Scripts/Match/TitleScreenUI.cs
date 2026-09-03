@@ -346,6 +346,11 @@ public class TitleScreenUI : MonoBehaviour
 
     private void HandleNewGame()
     {
+        PlayQuickFade(ShowPositionPanel);
+    }
+
+    private void ShowPositionPanel()
+    {
         if (titlePanel != null)
         {
             titlePanel.SetActive(false);
@@ -359,6 +364,11 @@ public class TitleScreenUI : MonoBehaviour
     }
 
     private void HandleBackFromPositionSelect()
+    {
+        PlayQuickFade(ShowTitlePanel);
+    }
+
+    private void ShowTitlePanel()
     {
         if (positionPanel != null)
         {
@@ -377,6 +387,11 @@ public class TitleScreenUI : MonoBehaviour
         selectedPosition = position;
         allocatedStats = new PlayerStats();
 
+        PlayQuickFade(ShowAllocationPanel);
+    }
+
+    private void ShowAllocationPanel()
+    {
         if (positionPanel != null)
         {
             positionPanel.SetActive(false);
@@ -462,6 +477,11 @@ public class TitleScreenUI : MonoBehaviour
 
     private void HandleBackFromAllocation()
     {
+        PlayQuickFade(ShowPositionPanelFromAllocation);
+    }
+
+    private void ShowPositionPanelFromAllocation()
+    {
         if (allocationPanel != null)
         {
             allocationPanel.SetActive(false);
@@ -485,6 +505,17 @@ public class TitleScreenUI : MonoBehaviour
         {
             gameFlowManager.StartNewCareerFromTitle(selectedPosition, allocatedStats.Clone());
         }
+    }
+
+    private void PlayQuickFade(System.Action transitionAction)
+    {
+        if (gameFlowManager == null)
+        {
+            transitionAction?.Invoke();
+            return;
+        }
+
+        gameFlowManager.PlayUiTransition(string.Empty, transitionAction);
     }
 
     private void HandleQuit()

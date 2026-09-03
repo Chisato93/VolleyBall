@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -48,6 +49,7 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button resultCloseButton;
+    [SerializeField] private ScreenTransitionUI screenTransitionUI;
 
     private int remainingActionPoints;
     private ResultCloseAction resultCloseAction;
@@ -100,6 +102,7 @@ public class GameFlowManager : MonoBehaviour
         CreateMissingMainControls();
         CreateMissingResultPanel();
         titleScreenUI.Initialize(this, GetUiRoot(), actionPointText);
+        EnsureScreenTransitionUI();
 
         if (trainingActionButton != null)
         {
@@ -156,16 +159,32 @@ public class GameFlowManager : MonoBehaviour
 
     public void CompleteTrainingAction()
     {
-        CompleteAction();
+        PlayQuickFade(CompleteAction);
     }
 
     public void OnMatchEnded()
     {
         ApplyMatchRewardIfNeeded();
-        ShowMatchResult();
+        PlayScreenTransition("결과 정리 중...", ShowMatchResult);
     }
 
     public void ContinueCareerFromTitle()
+    {
+        PlayScreenTransition("불러오는 중...", ContinueCareerFromTitleNow);
+    }
+
+    public void PlayUiTransition(string loadingMessage, Action transitionAction)
+    {
+        if (string.IsNullOrEmpty(loadingMessage))
+        {
+            PlayQuickFade(transitionAction);
+            return;
+        }
+
+        PlayScreenTransition(loadingMessage, transitionAction);
+    }
+
+    private void ContinueCareerFromTitleNow()
     {
         if (titleScreenUI != null)
         {
@@ -177,9 +196,12 @@ public class GameFlowManager : MonoBehaviour
 
     public void StartNewCareerFromTitle(POSITION selectedPosition, PlayerStats allocatedStats)
     {
-        PlayerStats startingStats = BuildNewCareerStartingStats(selectedPosition, allocatedStats);
-        ResetCareerSaveData(selectedPosition, startingStats);
-        ContinueCareerFromTitle();
+        PlayScreenTransition("커리어 시작 중...", () =>
+        {
+            PlayerStats startingStats = BuildNewCareerStartingStats(selectedPosition, allocatedStats);
+            ResetCareerSaveData(selectedPosition, startingStats);
+            ContinueCareerFromTitleNow();
+        });
     }
 
     public void StartNewCareerFromTitle(POSITION selectedPosition)
@@ -249,10 +271,15 @@ public class GameFlowManager : MonoBehaviour
     {
         if (remainingActionPoints <= 0)
         {
-            ShowMainPanel();
+            PlayQuickFade(ShowMainPanel);
             return;
         }
 
+        PlayQuickFade(StartTrainingActionNow);
+    }
+
+    private void StartTrainingActionNow()
+    {
         if (mainPanel != null)
         {
             mainPanel.SetActive(false);
@@ -327,10 +354,15 @@ public class GameFlowManager : MonoBehaviour
     {
         if (remainingActionPoints <= 0)
         {
-            ShowMainPanel();
+            PlayQuickFade(ShowMainPanel);
             return;
         }
 
+        PlayQuickFade(StartRestActionNow);
+    }
+
+    private void StartRestActionNow()
+    {
         if (mainPanel != null)
         {
             mainPanel.SetActive(false);
@@ -352,7 +384,18 @@ public class GameFlowManager : MonoBehaviour
 
     private void StartShopAction()
     {
+        PlayQuickFade(StartShopActionNow);
+    }
+
+    private void StartShopActionNow()
+    {
         resultCloseAction = ResultCloseAction.ReturnToVillage;
+
+        if (mainPanel != null)
+        {
+            mainPanel.SetActive(false);
+        }
+
         SetResultPanelActive(true);
 
         if (resultText != null)
@@ -363,7 +406,18 @@ public class GameFlowManager : MonoBehaviour
 
     private void StartPlayerInfoAction()
     {
+        PlayQuickFade(StartPlayerInfoActionNow);
+    }
+
+    private void StartPlayerInfoActionNow()
+    {
         resultCloseAction = ResultCloseAction.ReturnToVillage;
+
+        if (mainPanel != null)
+        {
+            mainPanel.SetActive(false);
+        }
+
         SetResultPanelActive(true);
 
         if (resultText != null)
@@ -374,7 +428,7 @@ public class GameFlowManager : MonoBehaviour
 
     private void StartMatchAction()
     {
-        StartMatchPhase();
+        PlayScreenTransition("경기 준비 중...", StartMatchPhase);
     }
 
     private string BuildShopText()
@@ -439,8 +493,8 @@ public class GameFlowManager : MonoBehaviour
         PlayerStats stats = playerData.Stats;
         int staminaBefore = stats.Stamina;
         int mentalBefore = stats.Mental;
-        int staminaIncrease = Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
-        int mentalIncrease = Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
+        int staminaIncrease = UnityEngine.Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
+        int mentalIncrease = UnityEngine.Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
 
         stats.AddValue(PlayerStatType.Stamina, staminaIncrease, MaxStatValue);
         stats.AddValue(PlayerStatType.Mental, mentalIncrease, MaxStatValue);
@@ -617,6 +671,17 @@ public class GameFlowManager : MonoBehaviour
     }
 
     private void HandleResultClose()
+    {
+        if (resultCloseAction == ResultCloseAction.ReturnToMain)
+        {
+            PlayScreenTransition("마을로 돌아가는 중...", HandleResultCloseNow);
+            return;
+        }
+
+        PlayQuickFade(HandleResultCloseNow);
+    }
+
+    private void HandleResultCloseNow()
     {
         SetResultPanelActive(false);
 
@@ -796,6 +861,43 @@ public class GameFlowManager : MonoBehaviour
         {
             resultPanel.SetActive(isActive);
         }
+    }
+
+    private void EnsureScreenTransitionUI()
+    {
+        if (screenTransitionUI == null)
+        {
+            screenTransitionUI = FindFirstObjectByType<ScreenTransitionUI>();
+        }
+
+        if (screenTransitionUI == null)
+        {
+            screenTransitionUI = gameObject.AddComponent<ScreenTransitionUI>();
+        }
+
+        screenTransitionUI.Initialize(GetUiRoot(), actionPointText);
+    }
+
+    private void PlayScreenTransition(string loadingMessage, Action transitionAction)
+    {
+        if (screenTransitionUI == null)
+        {
+            transitionAction?.Invoke();
+            return;
+        }
+
+        screenTransitionUI.TryPlay(loadingMessage, transitionAction);
+    }
+
+    private void PlayQuickFade(Action transitionAction)
+    {
+        if (screenTransitionUI == null)
+        {
+            transitionAction?.Invoke();
+            return;
+        }
+
+        screenTransitionUI.TryPlayQuick(transitionAction);
     }
 
     private Transform GetUiRoot()
