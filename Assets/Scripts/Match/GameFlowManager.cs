@@ -45,6 +45,7 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
     [SerializeField] private WalletManager walletManager;
     [SerializeField] private CareerCalendarManager careerCalendarManager;
+    [SerializeField] private TitleScreenCanvas titleScreenCanvas;
     [SerializeField] private TitleScreenUI titleScreenUI;
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text resultText;
@@ -171,6 +172,7 @@ public class GameFlowManager : MonoBehaviour
     public void ContinueCareerFromTitle()
     {
         PlayScreenTransition("불러오는 중...", ContinueCareerFromTitleNow);
+        SceneLoadManager.Instance.LoadScene(SceneEnums.MainScene);
     }
 
     public void PlayUiTransition(string loadingMessage, Action transitionAction)
@@ -194,13 +196,19 @@ public class GameFlowManager : MonoBehaviour
         StartMainPhase();
     }
 
+    public void StartNewGameSelection()
+    {
+        titleScreenCanvas.TryPositionMenu();
+    }
+
     public void StartNewCareerFromTitle(POSITION selectedPosition, PlayerStats allocatedStats)
     {
         PlayScreenTransition("커리어 시작 중...", () =>
         {
             PlayerStats startingStats = BuildNewCareerStartingStats(selectedPosition, allocatedStats);
             ResetCareerSaveData(selectedPosition, startingStats);
-            ContinueCareerFromTitleNow();
+            // ContinueCareerFromTitleNow();
+            SceneLoadManager.Instance.LoadScene(SceneEnums.MainScene);
         });
     }
 

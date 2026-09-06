@@ -32,3 +32,10 @@ public enum BallTouchAction
     Spike,
     Block
 }
+
+public enum SceneEnums
+{
+    TitleScreen,
+    MainScene,
+    MatchScene
+}
