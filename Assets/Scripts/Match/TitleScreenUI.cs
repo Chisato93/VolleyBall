@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class TitleScreenUI : MonoBehaviour
@@ -338,10 +339,7 @@ public class TitleScreenUI : MonoBehaviour
 
     private void HandleContinue()
     {
-        if (gameFlowManager != null)
-        {
-            gameFlowManager.ContinueCareerFromTitle();
-        }
+        LoadMainScene();
     }
 
     private void HandleNewGame()
@@ -501,10 +499,8 @@ public class TitleScreenUI : MonoBehaviour
             return;
         }
 
-        if (gameFlowManager != null)
-        {
-            gameFlowManager.StartNewCareerFromTitle(selectedPosition, allocatedStats.Clone());
-        }
+        GameFlowStateManager.StartNewCareer(selectedPosition, allocatedStats.Clone());
+        LoadMainScene();
     }
 
     private void PlayQuickFade(System.Action transitionAction)
@@ -520,10 +516,11 @@ public class TitleScreenUI : MonoBehaviour
 
     private void HandleQuit()
     {
-        if (gameFlowManager != null)
-        {
-            gameFlowManager.QuitGameFromTitle();
-        }
+#if UNITY_EDITOR
+        Debug.Log("에디터에서는 종료 버튼이 게임을 닫지 않습니다.");
+#else
+        Application.Quit();
+#endif
     }
 
     private int GetRemainingBonusPoints()
@@ -623,6 +620,17 @@ public class TitleScreenUI : MonoBehaviour
             default:
                 return position.ToString();
         }
+    }
+
+    private void LoadMainScene()
+    {
+        if (SceneLoadManager.Instance != null)
+        {
+            SceneLoadManager.Instance.LoadScene(SceneEnums.MainScene);
+            return;
+        }
+
+        SceneManager.LoadScene((int)SceneEnums.MainScene);
     }
 
     private struct StatAllocationRow

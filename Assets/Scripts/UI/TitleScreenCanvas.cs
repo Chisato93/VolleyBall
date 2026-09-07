@@ -1,7 +1,6 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Playables;
+using UnityEngine.SceneManagement;
 
 enum TITLE_SCREEN_STATE
 {
@@ -17,19 +16,19 @@ public class TitleScreenCanvas : MonoBehaviour, IPointerClickHandler
     [SerializeField] private TitleScreenPanel titleScreenPanel;
     [SerializeField] private PositionSelectPanel positionSelectPanel;
     [SerializeField] private StatAllocationPanel statusSelectPanel;
-    [SerializeField] private GameFlowManager gameFlowManager;
-    // ========================================================
-    // æ¿ ¿¸»Ø Ω√, ∞™¿ª ¿¸¥ﬁ«œ±‚ ¿ß«ÿ ¿”Ω√∑Œ ªÁøÎ«œ¥¬ ∫Øºˆ
+
     private POSITION selectedPosition;
+    private TITLE_SCREEN_STATE currentState;
+
     public void SetSelectedPosition(POSITION position)
     {
         selectedPosition = position;
     }
-    public POSITION GetPosition() { return selectedPosition; }
 
-    // ========================================================
-
-    private TITLE_SCREEN_STATE currentState;
+    public POSITION GetPosition()
+    {
+        return selectedPosition;
+    }
 
     private void Start()
     {
@@ -49,8 +48,8 @@ public class TitleScreenCanvas : MonoBehaviour, IPointerClickHandler
     {
         if (currentState != TITLE_SCREEN_STATE.TITLE_SCREEN)
             return;
-        currentState = TITLE_SCREEN_STATE.MAIN_MENU_SCREEN;
 
+        currentState = TITLE_SCREEN_STATE.MAIN_MENU_SCREEN;
         subtitleText.SetActive(false);
 
         titleScreenPanel.Show();
@@ -60,7 +59,7 @@ public class TitleScreenCanvas : MonoBehaviour, IPointerClickHandler
 
     public void TryPositionMenu()
     {
-        if (currentState == TITLE_SCREEN_STATE.MAIN_MENU_SCREEN 
+        if (currentState == TITLE_SCREEN_STATE.MAIN_MENU_SCREEN
             || currentState == TITLE_SCREEN_STATE.SELECT_STATUS_SCREEN)
         {
             currentState = TITLE_SCREEN_STATE.POSITION_SELECT_SCREEN;
@@ -75,6 +74,7 @@ public class TitleScreenCanvas : MonoBehaviour, IPointerClickHandler
     {
         if (currentState != TITLE_SCREEN_STATE.POSITION_SELECT_SCREEN)
             return;
+
         currentState = TITLE_SCREEN_STATE.SELECT_STATUS_SCREEN;
 
         titleScreenPanel.Hide();
@@ -86,6 +86,7 @@ public class TitleScreenCanvas : MonoBehaviour, IPointerClickHandler
     {
         if (currentState != TITLE_SCREEN_STATE.POSITION_SELECT_SCREEN)
             return;
+
         currentState = TITLE_SCREEN_STATE.TITLE_SCREEN;
         subtitleText.SetActive(true);
         titleScreenPanel.Hide();
@@ -95,21 +96,41 @@ public class TitleScreenCanvas : MonoBehaviour, IPointerClickHandler
 
     public void TryStartNewGame()
     {
-        gameFlowManager.StartNewGameSelection();
+        TryPositionMenu();
     }
+
     public void TryContinueGame()
     {
-        gameFlowManager.ContinueCareerFromTitle();
+        LoadMainScene();
     }
+
     public void TryExitGame()
     {
-        gameFlowManager.QuitGameFromTitle();
+#if UNITY_EDITOR
+        Debug.Log("ÏóêÎîîÌÑ∞ÏóêÏÑúÎäî Ï¢ÖÎ£å Î≤ÑÌäºÏù¥ Í≤åÏûÑÏùÑ Îã´ÏßÄ ÏïäÏäµÎãàÎã§.");
+#else
+        Application.Quit();
+#endif
     }
+
     public void HandleStartCareer(PlayerStats stats)
     {
-        if (gameFlowManager == null || stats == null)
+        if (stats == null)
             return;
+
         Debug.Log("Starting new career with position: " + selectedPosition.ToString() + " and stats: " + stats.ToString());
-        gameFlowManager.StartNewCareerFromTitle(selectedPosition, stats.Clone());
+        GameFlowStateManager.StartNewCareer(selectedPosition, stats.Clone());
+        LoadMainScene();
+    }
+
+    private void LoadMainScene()
+    {
+        if (SceneLoadManager.Instance != null)
+        {
+            SceneLoadManager.Instance.LoadScene(SceneEnums.MainScene);
+            return;
+        }
+
+        SceneManager.LoadScene((int)SceneEnums.MainScene);
     }
 }

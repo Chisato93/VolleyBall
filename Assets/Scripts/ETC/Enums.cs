@@ -35,7 +35,7 @@ public enum BallTouchAction
 
 public enum SceneEnums
 {
-    TitleScreen,
+    TitleScene,
     MainScene,
     MatchScene
 }

@@ -6,6 +6,20 @@ using UnityEngine.UI;
 
 public class GameFlowManager : MonoBehaviour
 {
+    private struct MatchRewardResult
+    {
+        public bool IsWin;
+        public bool HasWallet;
+        public int ResultScore;
+        public int ScorePointScore;
+        public int AttackSuccessScore;
+        public int AttackFailurePenalty;
+        public int MatchEvaluationScore;
+        public int SeasonEvaluationScore;
+        public int Allowance;
+        public int CurrentMoney;
+    }
+
     private const int WinEvaluationScore = 30;
     private const int LoseEvaluationScore = 10;
     private const int ScorePointEvaluationScore = 2;
@@ -16,22 +30,6 @@ public class GameFlowManager : MonoBehaviour
     private const int MinRestIncrease = 1;
     private const int MaxRestIncreaseExclusive = 4;
     private const int MaxStatValue = 99;
-    private const int StartingStatValue = 20;
-    private const int StartingBonusPoints = 10;
-    private const int InitialStatCap = 30;
-
-    private static readonly PlayerStatType[] StartingStatTypes =
-    {
-        PlayerStatType.Power,
-        PlayerStatType.Jump,
-        PlayerStatType.Receive,
-        PlayerStatType.Set,
-        PlayerStatType.Block,
-        PlayerStatType.Serve,
-        PlayerStatType.Speed,
-        PlayerStatType.Stamina,
-        PlayerStatType.Mental
-    };
 
     [SerializeField] private int maxActionPoints = 3;
     [SerializeField] private GameObject mainPanel;
@@ -45,17 +43,15 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private TrainingSelectionUI trainingSelectionUI;
     [SerializeField] private WalletManager walletManager;
     [SerializeField] private CareerCalendarManager careerCalendarManager;
-    [SerializeField] private TitleScreenCanvas titleScreenCanvas;
-    [SerializeField] private TitleScreenUI titleScreenUI;
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button resultCloseButton;
     [SerializeField] private ScreenTransitionUI screenTransitionUI;
 
     private int remainingActionPoints;
-    private ResultCloseAction resultCloseAction;
     private bool hasAppliedMatchReward;
     private MatchRewardResult lastMatchRewardResult;
+    private ResultCloseAction resultCloseAction;
 
     public int MaxActionPoints => maxActionPoints;
     public int RemainingActionPoints => remainingActionPoints;
@@ -90,19 +86,8 @@ public class GameFlowManager : MonoBehaviour
             careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
         }
 
-        if (titleScreenUI == null)
-        {
-            titleScreenUI = FindFirstObjectByType<TitleScreenUI>();
-        }
-
-        if (titleScreenUI == null)
-        {
-            titleScreenUI = gameObject.AddComponent<TitleScreenUI>();
-        }
-
         CreateMissingMainControls();
         CreateMissingResultPanel();
-        titleScreenUI.Initialize(this, GetUiRoot(), actionPointText);
         EnsureScreenTransitionUI();
 
         if (trainingActionButton != null)
@@ -144,18 +129,7 @@ public class GameFlowManager : MonoBehaviour
 
     private void Start()
     {
-        ShowTitleScreen();
-    }
-
-    public int ConsumeActionPoint()
-    {
-        if (remainingActionPoints > 0)
-        {
-            remainingActionPoints--;
-        }
-
-        UpdateMainPanel();
-        return remainingActionPoints;
+        StartMainPhase();
     }
 
     public void CompleteTrainingAction()
@@ -169,12 +143,6 @@ public class GameFlowManager : MonoBehaviour
         PlayScreenTransition("결과 정리 중...", ShowMatchResult);
     }
 
-    public void ContinueCareerFromTitle()
-    {
-        PlayScreenTransition("불러오는 중...", ContinueCareerFromTitleNow);
-        SceneLoadManager.Instance.LoadScene(SceneEnums.MainScene);
-    }
-
     public void PlayUiTransition(string loadingMessage, Action transitionAction)
     {
         if (string.IsNullOrEmpty(loadingMessage))
@@ -186,69 +154,6 @@ public class GameFlowManager : MonoBehaviour
         PlayScreenTransition(loadingMessage, transitionAction);
     }
 
-    private void ContinueCareerFromTitleNow()
-    {
-        if (titleScreenUI != null)
-        {
-            titleScreenUI.Hide();
-        }
-
-        StartMainPhase();
-    }
-
-    public void StartNewGameSelection()
-    {
-        titleScreenCanvas.TryPositionMenu();
-    }
-
-    public void StartNewCareerFromTitle(POSITION selectedPosition, PlayerStats allocatedStats)
-    {
-        PlayScreenTransition("커리어 시작 중...", () =>
-        {
-            PlayerStats startingStats = BuildNewCareerStartingStats(selectedPosition, allocatedStats);
-            ResetCareerSaveData(selectedPosition, startingStats);
-            // ContinueCareerFromTitleNow();
-            SceneLoadManager.Instance.LoadScene(SceneEnums.MainScene);
-        });
-    }
-
-    public void StartNewCareerFromTitle(POSITION selectedPosition)
-    {
-        StartNewCareerFromTitle(selectedPosition, new PlayerStats());
-    }
-
-    public void QuitGameFromTitle()
-    {
-#if UNITY_EDITOR
-        Debug.Log("에디터에서는 종료 버튼이 게임을 닫지 않습니다.");
-#else
-        Application.Quit();
-#endif
-    }
-
-    private void ShowTitleScreen()
-    {
-        if (mainPanel != null)
-        {
-            mainPanel.SetActive(false);
-        }
-
-        if (trainingSelectionUI != null)
-        {
-            trainingSelectionUI.Hide();
-        }
-
-        SetResultPanelActive(false);
-
-        if (titleScreenUI != null)
-        {
-            titleScreenUI.Show();
-            return;
-        }
-
-        StartMainPhase();
-    }
-
     private void StartMainPhase()
     {
         remainingActionPoints = Mathf.Max(0, maxActionPoints);
@@ -257,11 +162,6 @@ public class GameFlowManager : MonoBehaviour
 
     private void ShowMainPanel()
     {
-        if (titleScreenUI != null)
-        {
-            titleScreenUI.Hide();
-        }
-
         if (trainingSelectionUI != null)
         {
             trainingSelectionUI.Hide();
@@ -385,6 +285,46 @@ public class GameFlowManager : MonoBehaviour
         ShowActionResult(result);
     }
 
+    public int ConsumeActionPoint()
+    {
+        if (remainingActionPoints > 0)
+        {
+            remainingActionPoints--;
+        }
+
+        UpdateMainPanel();
+        return remainingActionPoints;
+    }
+
+    private RestResult ApplyRestAction()
+    {
+        RestResult result = new RestResult();
+
+        if (!TryGetPlayerRole(out CharacterRole characterRole))
+        {
+            result.Success = false;
+            return result;
+        }
+
+        PlayerData playerData = characterRole.PlayerData;
+        PlayerStats stats = playerData.Stats;
+        int staminaBefore = stats.Stamina;
+        int mentalBefore = stats.Mental;
+        int staminaIncrease = UnityEngine.Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
+        int mentalIncrease = UnityEngine.Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
+
+        stats.AddValue(PlayerStatType.Stamina, staminaIncrease, MaxStatValue);
+        stats.AddValue(PlayerStatType.Mental, mentalIncrease, MaxStatValue);
+        PlayerSaveManager.SavePlayerStats(playerData);
+
+        result.Success = true;
+        result.StaminaBefore = staminaBefore;
+        result.StaminaAfter = stats.Stamina;
+        result.MentalBefore = mentalBefore;
+        result.MentalAfter = stats.Mental;
+        return result;
+    }
+
     private void CompleteAction()
     {
         ShowMainPanel();
@@ -487,35 +427,6 @@ public class GameFlowManager : MonoBehaviour
         return builder.ToString();
     }
 
-    private RestResult ApplyRestAction()
-    {
-        RestResult result = new RestResult();
-
-        if (!TryGetPlayerRole(out CharacterRole characterRole))
-        {
-            result.Success = false;
-            return result;
-        }
-
-        PlayerData playerData = characterRole.PlayerData;
-        PlayerStats stats = playerData.Stats;
-        int staminaBefore = stats.Stamina;
-        int mentalBefore = stats.Mental;
-        int staminaIncrease = UnityEngine.Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
-        int mentalIncrease = UnityEngine.Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
-
-        stats.AddValue(PlayerStatType.Stamina, staminaIncrease, MaxStatValue);
-        stats.AddValue(PlayerStatType.Mental, mentalIncrease, MaxStatValue);
-        PlayerSaveManager.SavePlayerStats(playerData);
-
-        result.Success = true;
-        result.StaminaBefore = staminaBefore;
-        result.StaminaAfter = stats.Stamina;
-        result.MentalBefore = mentalBefore;
-        result.MentalAfter = stats.Mental;
-        return result;
-    }
-
     private void ShowActionResult(RestResult result)
     {
         resultCloseAction = ResultCloseAction.CompleteAction;
@@ -602,7 +513,7 @@ public class GameFlowManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("WalletManager를 찾지 못해 출전 수당을 지급하지 못했습니다.");
+            Debug.LogWarning("WalletManager를 찾지 못해서 경기 수당을 지급하지 못했습니다.");
         }
 
         hasAppliedMatchReward = true;
@@ -648,6 +559,7 @@ public class GameFlowManager : MonoBehaviour
             Allowance = isWin ? WinAllowance : LoseAllowance
         };
     }
+
 
     private static void AppendMatchRewardText(StringBuilder builder, MatchRewardResult rewardResult)
     {
@@ -923,117 +835,13 @@ public class GameFlowManager : MonoBehaviour
         return null;
     }
 
-    private void ResetCareerSaveData(POSITION selectedPosition, PlayerStats startingStats)
+    private struct RestResult
     {
-        ResolveCareerManagers();
-
-        if (walletManager != null)
-        {
-            walletManager.ResetMoney();
-        }
-
-        if (careerCalendarManager != null)
-        {
-            careerCalendarManager.ResetCareerCalendar();
-        }
-
-        PlayerSaveManager.ResetSeasonCoachEvaluationScore();
-        PlayerSaveManager.SaveSelectedPosition(selectedPosition);
-
-        CharacterRole[] characterRoles = FindObjectsByType<CharacterRole>(FindObjectsSortMode.None);
-        foreach (CharacterRole characterRole in characterRoles)
-        {
-            characterRole.ResetSavedStatsToNewCareer(selectedPosition, startingStats);
-        }
-    }
-
-    private static PlayerStats BuildNewCareerStartingStats(POSITION selectedPosition, PlayerStats allocatedStats)
-    {
-        PlayerStats startingStats = CreateBaseStartingStats();
-        int remainingBonusPoints = StartingBonusPoints;
-
-        if (allocatedStats != null)
-        {
-            foreach (PlayerStatType statType in StartingStatTypes)
-            {
-                int maxAllocatable = InitialStatCap - startingStats.GetValue(statType);
-                int requestedAmount = allocatedStats.GetValue(statType);
-                int appliedAmount = Mathf.Clamp(requestedAmount, 0, Mathf.Min(maxAllocatable, remainingBonusPoints));
-
-                startingStats.AddValue(statType, appliedAmount, InitialStatCap);
-                remainingBonusPoints -= appliedAmount;
-            }
-        }
-
-        ApplyPositionBonus(startingStats, selectedPosition);
-        return startingStats;
-    }
-
-    private static PlayerStats CreateBaseStartingStats()
-    {
-        PlayerStats stats = new PlayerStats();
-
-        foreach (PlayerStatType statType in StartingStatTypes)
-        {
-            stats.SetValue(statType, StartingStatValue);
-        }
-
-        return stats;
-    }
-
-    private static void ApplyPositionBonus(PlayerStats stats, POSITION position)
-    {
-        switch (position)
-        {
-            case POSITION.OutsideHitter:
-                AddStartingBonus(stats, PlayerStatType.Power, 4);
-                AddStartingBonus(stats, PlayerStatType.Jump, 3);
-                AddStartingBonus(stats, PlayerStatType.Receive, 3);
-                break;
-            case POSITION.OppositeHitter:
-                AddStartingBonus(stats, PlayerStatType.Power, 5);
-                AddStartingBonus(stats, PlayerStatType.Serve, 3);
-                AddStartingBonus(stats, PlayerStatType.Jump, 3);
-                break;
-            case POSITION.MiddleBlocker:
-                AddStartingBonus(stats, PlayerStatType.Block, 5);
-                AddStartingBonus(stats, PlayerStatType.Jump, 4);
-                AddStartingBonus(stats, PlayerStatType.Power, 3);
-                break;
-            case POSITION.Setter:
-                AddStartingBonus(stats, PlayerStatType.Set, 5);
-                AddStartingBonus(stats, PlayerStatType.Mental, 4);
-                AddStartingBonus(stats, PlayerStatType.Speed, 3);
-                break;
-            case POSITION.Libero:
-                AddStartingBonus(stats, PlayerStatType.Receive, 5);
-                AddStartingBonus(stats, PlayerStatType.Speed, 4);
-                AddStartingBonus(stats, PlayerStatType.Mental, 3);
-                break;
-            case POSITION.DefensiveSpecialist:
-                AddStartingBonus(stats, PlayerStatType.Receive, 4);
-                AddStartingBonus(stats, PlayerStatType.Speed, 4);
-                AddStartingBonus(stats, PlayerStatType.Stamina, 3);
-                break;
-        }
-    }
-
-    private static void AddStartingBonus(PlayerStats stats, PlayerStatType statType, int amount)
-    {
-        stats.AddValue(statType, amount, MaxStatValue);
-    }
-
-    private void ResolveCareerManagers()
-    {
-        if (walletManager == null)
-        {
-            walletManager = FindFirstObjectByType<WalletManager>();
-        }
-
-        if (careerCalendarManager == null)
-        {
-            careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
-        }
+        public bool Success;
+        public int StaminaBefore;
+        public int StaminaAfter;
+        public int MentalBefore;
+        public int MentalAfter;
     }
 
     private static bool TryGetPlayerRole(out CharacterRole characterRole)
@@ -1055,26 +863,5 @@ public class GameFlowManager : MonoBehaviour
         return true;
     }
 
-    private struct RestResult
-    {
-        public bool Success;
-        public int StaminaBefore;
-        public int StaminaAfter;
-        public int MentalBefore;
-        public int MentalAfter;
-    }
 
-    private struct MatchRewardResult
-    {
-        public bool IsWin;
-        public bool HasWallet;
-        public int ResultScore;
-        public int ScorePointScore;
-        public int AttackSuccessScore;
-        public int AttackFailurePenalty;
-        public int MatchEvaluationScore;
-        public int SeasonEvaluationScore;
-        public int Allowance;
-        public int CurrentMoney;
-    }
 }

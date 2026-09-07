@@ -107,6 +107,25 @@ public static class PlayerSaveManager
         PlayerPrefs.Save();
     }
 
+    public static void SavePlayerStats(string playerSaveId, PlayerStats stats)
+    {
+        if (string.IsNullOrWhiteSpace(playerSaveId) || stats == null)
+        {
+            return;
+        }
+
+        SaveStat(playerSaveId, PlayerStatType.Power, stats.Power);
+        SaveStat(playerSaveId, PlayerStatType.Jump, stats.Jump);
+        SaveStat(playerSaveId, PlayerStatType.Receive, stats.Receive);
+        SaveStat(playerSaveId, PlayerStatType.Set, stats.Set);
+        SaveStat(playerSaveId, PlayerStatType.Block, stats.Block);
+        SaveStat(playerSaveId, PlayerStatType.Serve, stats.Serve);
+        SaveStat(playerSaveId, PlayerStatType.Speed, stats.Speed);
+        SaveStat(playerSaveId, PlayerStatType.Stamina, stats.Stamina);
+        SaveStat(playerSaveId, PlayerStatType.Mental, stats.Mental);
+        PlayerPrefs.Save();
+    }
+
     public static void ResetCareerSave(int startingYear, int startingMonth)
     {
         SaveCareerDate(startingYear, startingMonth);
@@ -154,7 +173,12 @@ public static class PlayerSaveManager
 
     private static void SaveStat(PlayerData playerData, PlayerStatType statType, int value)
     {
-        PlayerPrefs.SetInt(GetPlayerStatPrefsKey(playerData, statType), Mathf.Max(0, value));
+        SaveStat(GetPlayerSaveId(playerData), statType, value);
+    }
+
+    private static void SaveStat(string playerSaveId, PlayerStatType statType, int value)
+    {
+        PlayerPrefs.SetInt(GetPlayerStatPrefsKey(playerSaveId, statType), Mathf.Max(0, value));
     }
 
     private static void DeleteStat(PlayerData playerData, PlayerStatType statType)
@@ -164,7 +188,12 @@ public static class PlayerSaveManager
 
     private static string GetPlayerStatPrefsKey(PlayerData playerData, PlayerStatType statType)
     {
-        return $"{PlayerStatsPrefsKeyPrefix}.{GetPlayerSaveId(playerData)}.{statType}";
+        return GetPlayerStatPrefsKey(GetPlayerSaveId(playerData), statType);
+    }
+
+    private static string GetPlayerStatPrefsKey(string playerSaveId, PlayerStatType statType)
+    {
+        return $"{PlayerStatsPrefsKeyPrefix}.{playerSaveId}.{statType}";
     }
 
     private static string GetPlayerSaveId(PlayerData playerData)
