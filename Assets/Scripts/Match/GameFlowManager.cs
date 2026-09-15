@@ -2,34 +2,16 @@ using System;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameFlowManager : MonoBehaviour
 {
-    private struct MatchRewardResult
-    {
-        public bool IsWin;
-        public bool HasWallet;
-        public int ResultScore;
-        public int ScorePointScore;
-        public int AttackSuccessScore;
-        public int AttackFailurePenalty;
-        public int MatchEvaluationScore;
-        public int SeasonEvaluationScore;
-        public int Allowance;
-        public int CurrentMoney;
-    }
-
-    private const int WinEvaluationScore = 30;
-    private const int LoseEvaluationScore = 10;
-    private const int ScorePointEvaluationScore = 2;
-    private const int AttackSuccessEvaluationScore = 2;
-    private const int AttackFailureEvaluationPenalty = 1;
-    private const int WinAllowance = 100;
-    private const int LoseAllowance = 30;
     private const int MinRestIncrease = 1;
     private const int MaxRestIncreaseExclusive = 4;
     private const int MaxStatValue = 99;
+    private const int StartingStatValue = 20;
+    private const string CareerPlayerSaveId = "Player Outside Hitter";
 
     [SerializeField] private int maxActionPoints = 3;
     [SerializeField] private GameObject mainPanel;
@@ -39,8 +21,7 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private Button shopActionButton;
     [SerializeField] private Button playerInfoActionButton;
     [SerializeField] private Button matchActionButton;
-    [SerializeField] private MatchManager matchManager;
-    [SerializeField] private TrainingSelectionUI trainingSelectionUI;
+    [SerializeField] private TrainingPanel trainingPanel;
     [SerializeField] private WalletManager walletManager;
     [SerializeField] private CareerCalendarManager careerCalendarManager;
     [SerializeField] private GameObject resultPanel;
@@ -49,42 +30,24 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private ScreenTransitionUI screenTransitionUI;
 
     private int remainingActionPoints;
-    private bool hasAppliedMatchReward;
-    private MatchRewardResult lastMatchRewardResult;
     private ResultCloseAction resultCloseAction;
 
     public int MaxActionPoints => maxActionPoints;
     public int RemainingActionPoints => remainingActionPoints;
+    public event Action<int, int> ActionPointsChanged;
 
     private enum ResultCloseAction
     {
         None,
         CompleteAction,
-        ReturnToVillage,
-        ReturnToMain
+        ReturnToVillage
     }
 
     private void Awake()
     {
-        if (matchManager == null)
-        {
-            matchManager = FindFirstObjectByType<MatchManager>();
-        }
+        CacheSceneReferences();
 
-        if (trainingSelectionUI == null)
-        {
-            trainingSelectionUI = FindFirstObjectByType<TrainingSelectionUI>();
-        }
-
-        if (walletManager == null)
-        {
-            walletManager = FindFirstObjectByType<WalletManager>();
-        }
-
-        if (careerCalendarManager == null)
-        {
-            careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
-        }
+        EnsureDataManagers();
 
         CreateMissingMainControls();
         CreateMissingResultPanel();
@@ -114,12 +77,6 @@ public class GameFlowManager : MonoBehaviour
             playerInfoActionButton.onClick.AddListener(StartPlayerInfoAction);
         }
 
-        if (matchActionButton != null)
-        {
-            matchActionButton.onClick.RemoveListener(StartMatchAction);
-            matchActionButton.onClick.AddListener(StartMatchAction);
-        }
-
         if (resultCloseButton != null)
         {
             resultCloseButton.onClick.RemoveListener(HandleResultClose);
@@ -129,18 +86,13 @@ public class GameFlowManager : MonoBehaviour
 
     private void Start()
     {
+        EnsureDataManagers();
         StartMainPhase();
     }
 
     public void CompleteTrainingAction()
     {
         PlayQuickFade(CompleteAction);
-    }
-
-    public void OnMatchEnded()
-    {
-        ApplyMatchRewardIfNeeded();
-        PlayScreenTransition("결과 정리 중...", ShowMatchResult);
     }
 
     public void PlayUiTransition(string loadingMessage, Action transitionAction)
@@ -162,9 +114,9 @@ public class GameFlowManager : MonoBehaviour
 
     private void ShowMainPanel()
     {
-        if (trainingSelectionUI != null)
+        if (trainingPanel != null)
         {
-            trainingSelectionUI.Hide();
+            trainingPanel.Hide();
         }
 
         if (mainPanel != null)
@@ -175,7 +127,7 @@ public class GameFlowManager : MonoBehaviour
         UpdateMainPanel();
     }
 
-    private void StartTrainingAction()
+    public void StartTrainingAction()
     {
         if (remainingActionPoints <= 0)
         {
@@ -193,35 +145,16 @@ public class GameFlowManager : MonoBehaviour
             mainPanel.SetActive(false);
         }
 
-        if (trainingSelectionUI != null)
+        if (trainingPanel != null)
         {
-            trainingSelectionUI.StartTrainingAction(this);
-        }
-    }
-
-    private void StartMatchPhase()
-    {
-        hasAppliedMatchReward = false;
-        lastMatchRewardResult = new MatchRewardResult();
-
-        if (mainPanel != null)
-        {
-            mainPanel.SetActive(false);
-        }
-
-        if (trainingSelectionUI != null)
-        {
-            trainingSelectionUI.Hide();
-        }
-
-        if (matchManager != null)
-        {
-            matchManager.StartMatch();
+            trainingPanel.StartTrainingAction(this);
         }
     }
 
     private void UpdateMainPanel()
     {
+        EnsureDataManagers();
+
         if (actionPointText != null)
         {
             int money = walletManager != null ? walletManager.CurrentMoney : 0;
@@ -256,6 +189,8 @@ public class GameFlowManager : MonoBehaviour
         {
             matchActionButton.interactable = true;
         }
+
+        ActionPointsChanged?.Invoke(remainingActionPoints, maxActionPoints);
     }
 
     private void StartRestAction()
@@ -277,11 +212,7 @@ public class GameFlowManager : MonoBehaviour
         }
 
         RestResult result = ApplyRestAction();
-        if (result.Success)
-        {
-            ConsumeActionPoint();
-        }
-
+        ConsumeActionPoint();
         ShowActionResult(result);
     }
 
@@ -299,15 +230,7 @@ public class GameFlowManager : MonoBehaviour
     private RestResult ApplyRestAction()
     {
         RestResult result = new RestResult();
-
-        if (!TryGetPlayerRole(out CharacterRole characterRole))
-        {
-            result.Success = false;
-            return result;
-        }
-
-        PlayerData playerData = characterRole.PlayerData;
-        PlayerStats stats = playerData.Stats;
+        PlayerStats stats = LoadCareerPlayerStats();
         int staminaBefore = stats.Stamina;
         int mentalBefore = stats.Mental;
         int staminaIncrease = UnityEngine.Random.Range(MinRestIncrease, MaxRestIncreaseExclusive);
@@ -315,9 +238,8 @@ public class GameFlowManager : MonoBehaviour
 
         stats.AddValue(PlayerStatType.Stamina, staminaIncrease, MaxStatValue);
         stats.AddValue(PlayerStatType.Mental, mentalIncrease, MaxStatValue);
-        PlayerSaveManager.SavePlayerStats(playerData);
+        PlayerSaveManager.SavePlayerStats(CareerPlayerSaveId, stats);
 
-        result.Success = true;
         result.StaminaBefore = staminaBefore;
         result.StaminaAfter = stats.Stamina;
         result.MentalBefore = mentalBefore;
@@ -374,13 +296,25 @@ public class GameFlowManager : MonoBehaviour
         }
     }
 
-    private void StartMatchAction()
+    public void StartMatchAction()
     {
-        PlayScreenTransition("경기 준비 중...", StartMatchPhase);
+        PlayScreenTransition("경기 준비 중...", LoadMatchScene);
+    }
+
+    private void LoadMatchScene()
+    {
+        if (SceneLoadManager.Instance != null)
+        {
+            SceneLoadManager.Instance.LoadScene(SceneEnums.MatchScene);
+            return;
+        }
+
+        SceneManager.LoadScene((int)SceneEnums.MatchScene);
     }
 
     private string BuildShopText()
     {
+        EnsureDataManagers();
         int money = walletManager != null ? walletManager.CurrentMoney : 0;
 
         StringBuilder builder = new StringBuilder();
@@ -395,6 +329,7 @@ public class GameFlowManager : MonoBehaviour
 
     private string BuildPlayerInfoText()
     {
+        EnsureDataManagers();
         StringBuilder builder = new StringBuilder();
         int money = walletManager != null ? walletManager.CurrentMoney : 0;
         int year = careerCalendarManager != null ? careerCalendarManager.CurrentYear : 1;
@@ -408,17 +343,10 @@ public class GameFlowManager : MonoBehaviour
         builder.AppendLine($"시즌 감독 평가점: {evaluationScore}");
         builder.AppendLine();
 
-        if (!TryGetPlayerRole(out CharacterRole characterRole))
-        {
-            builder.AppendLine("플레이어 정보를 찾지 못했습니다.");
-            return builder.ToString();
-        }
-
-        PlayerData playerData = characterRole.PlayerData;
-        PlayerStats stats = playerData.Stats;
-        builder.AppendLine($"이름: {playerData.PlayerName}");
-        builder.AppendLine($"등번호: {playerData.Number}");
-        builder.AppendLine($"포지션: {characterRole.Position}");
+        PlayerStats stats = LoadCareerPlayerStats();
+        POSITION selectedPosition = PlayerSaveManager.LoadSelectedPosition(POSITION.OutsideHitter);
+        builder.AppendLine($"이름: {CareerPlayerSaveId}");
+        builder.AppendLine($"포지션: {selectedPosition}");
         builder.AppendLine();
         builder.AppendLine("능력치");
         builder.AppendLine($"파워 {stats.Power} / 점프 {stats.Jump} / 리시브 {stats.Receive}");
@@ -437,167 +365,11 @@ public class GameFlowManager : MonoBehaviour
             return;
         }
 
-        resultText.text = result.Success
-            ? $"휴식 완료!\n체력 +{result.StaminaAfter - result.StaminaBefore} ({result.StaminaBefore} -> {result.StaminaAfter})\n멘탈 +{result.MentalAfter - result.MentalBefore} ({result.MentalBefore} -> {result.MentalAfter})\n남은 행동력: {remainingActionPoints} / {maxActionPoints}"
-            : "플레이어 스탯을 찾지 못했습니다.";
-    }
-
-    private void ShowMatchResult()
-    {
-        resultCloseAction = ResultCloseAction.ReturnToMain;
-
-        if (mainPanel != null)
-        {
-            mainPanel.SetActive(false);
-        }
-
-        if (trainingSelectionUI != null)
-        {
-            trainingSelectionUI.Hide();
-        }
-
-        SetResultPanelActive(true);
-
-        if (resultText != null)
-        {
-            resultText.text = BuildMatchResultText();
-        }
-    }
-
-    private string BuildMatchResultText()
-    {
-        MatchStats stats = matchManager != null ? matchManager.CurrentMatchStats : null;
-        int playerScore = matchManager != null ? matchManager.PlayerScore : 0;
-        int opponentScore = matchManager != null ? matchManager.OpponentScore : 0;
-
-        StringBuilder builder = new StringBuilder();
-        builder.AppendLine(playerScore > opponentScore ? "경기 승리!" : "경기 패배");
-        builder.AppendLine($"점수: Player {playerScore} - {opponentScore} Opponent");
-        builder.AppendLine();
-        AppendMatchRewardText(builder, lastMatchRewardResult);
-        builder.AppendLine();
-        builder.AppendLine("선수별 기록");
-
-        if (stats == null || stats.PlayerStats.Count == 0)
-        {
-            builder.AppendLine("기록된 선수 행동이 없습니다.");
-            return builder.ToString();
-        }
-
-        foreach (PlayerMatchStats playerStats in stats.PlayerStats)
-        {
-            builder.AppendLine($"{playerStats.PlayerName} ({playerStats.TeamSide})");
-            builder.AppendLine($"서브 {playerStats.Serves} / 리시브 {playerStats.Receives} / 토스 {playerStats.Sets} / 스파이크 {playerStats.Spikes}");
-            builder.AppendLine($"블록 {playerStats.Blocks} / 득점 {playerStats.Points} / 공격성공 {playerStats.AttackSuccesses} / 공격실패 {playerStats.AttackFailures}");
-            builder.AppendLine();
-        }
-
-        return builder.ToString();
-    }
-
-    private void ApplyMatchRewardIfNeeded()
-    {
-        if (hasAppliedMatchReward)
-        {
-            return;
-        }
-
-        lastMatchRewardResult = CalculateMatchReward();
-        lastMatchRewardResult.SeasonEvaluationScore = PlayerSaveManager.AddSeasonCoachEvaluationScore(lastMatchRewardResult.MatchEvaluationScore);
-
-        if (walletManager != null)
-        {
-            walletManager.AddMoney(lastMatchRewardResult.Allowance);
-            lastMatchRewardResult.CurrentMoney = walletManager.CurrentMoney;
-            lastMatchRewardResult.HasWallet = true;
-        }
-        else
-        {
-            Debug.LogWarning("WalletManager를 찾지 못해서 경기 수당을 지급하지 못했습니다.");
-        }
-
-        hasAppliedMatchReward = true;
-    }
-
-    private MatchRewardResult CalculateMatchReward()
-    {
-        MatchStats stats = matchManager != null ? matchManager.CurrentMatchStats : null;
-        int playerScore = matchManager != null ? matchManager.PlayerScore : 0;
-        int opponentScore = matchManager != null ? matchManager.OpponentScore : 0;
-        bool isWin = playerScore > opponentScore;
-        int attackSuccesses = 0;
-        int attackFailures = 0;
-
-        if (stats != null)
-        {
-            foreach (PlayerMatchStats playerStats in stats.PlayerStats)
-            {
-                if (playerStats.TeamSide != TeamSide.Player)
-                {
-                    continue;
-                }
-
-                attackSuccesses += playerStats.AttackSuccesses;
-                attackFailures += playerStats.AttackFailures;
-            }
-        }
-
-        int resultScore = isWin ? WinEvaluationScore : LoseEvaluationScore;
-        int scorePointScore = playerScore * ScorePointEvaluationScore;
-        int attackSuccessScore = attackSuccesses * AttackSuccessEvaluationScore;
-        int attackFailurePenalty = attackFailures * AttackFailureEvaluationPenalty;
-        int matchEvaluationScore = Mathf.Max(0, resultScore + scorePointScore + attackSuccessScore - attackFailurePenalty);
-
-        return new MatchRewardResult
-        {
-            IsWin = isWin,
-            ResultScore = resultScore,
-            ScorePointScore = scorePointScore,
-            AttackSuccessScore = attackSuccessScore,
-            AttackFailurePenalty = attackFailurePenalty,
-            MatchEvaluationScore = matchEvaluationScore,
-            Allowance = isWin ? WinAllowance : LoseAllowance
-        };
-    }
-
-
-    private static void AppendMatchRewardText(StringBuilder builder, MatchRewardResult rewardResult)
-    {
-        builder.AppendLine("감독 평가");
-        builder.AppendLine($"{(rewardResult.IsWin ? "승리" : "패배")} +{rewardResult.ResultScore}");
-        builder.AppendLine($"득점 기여 +{rewardResult.ScorePointScore}");
-        builder.AppendLine($"공격 성공 +{rewardResult.AttackSuccessScore}");
-
-        if (rewardResult.AttackFailurePenalty > 0)
-        {
-            builder.AppendLine($"공격 실패 -{rewardResult.AttackFailurePenalty}");
-        }
-
-        builder.AppendLine();
-        builder.AppendLine($"이번 경기 평가점: {rewardResult.MatchEvaluationScore}");
-        builder.AppendLine($"시즌 누적 평가점: {rewardResult.SeasonEvaluationScore}");
-        builder.AppendLine();
-        builder.AppendLine("출전 수당");
-        builder.AppendLine($"이번 경기 수당: {rewardResult.Allowance:N0}원");
-
-        if (rewardResult.HasWallet)
-        {
-            builder.AppendLine($"현재 보유 돈: {rewardResult.CurrentMoney:N0}원");
-        }
-        else
-        {
-            builder.AppendLine("현재 보유 돈: 지갑 정보를 찾지 못했습니다.");
-        }
+        resultText.text = $"휴식 완료!\n체력 +{result.StaminaAfter - result.StaminaBefore} ({result.StaminaBefore} -> {result.StaminaAfter})\n멘탈 +{result.MentalAfter - result.MentalBefore} ({result.MentalBefore} -> {result.MentalAfter})\n남은 행동력: {remainingActionPoints} / {maxActionPoints}";
     }
 
     private void HandleResultClose()
     {
-        if (resultCloseAction == ResultCloseAction.ReturnToMain)
-        {
-            PlayScreenTransition("마을로 돌아가는 중...", HandleResultCloseNow);
-            return;
-        }
-
         PlayQuickFade(HandleResultCloseNow);
     }
 
@@ -612,9 +384,6 @@ public class GameFlowManager : MonoBehaviour
                 break;
             case ResultCloseAction.ReturnToVillage:
                 ShowMainPanel();
-                break;
-            case ResultCloseAction.ReturnToMain:
-                StartMainPhase();
                 break;
         }
 
@@ -827,41 +596,139 @@ public class GameFlowManager : MonoBehaviour
             return mainPanel.transform.parent;
         }
 
-        if (trainingSelectionUI != null)
+        if (trainingPanel != null)
         {
-            return trainingSelectionUI.transform;
+            return trainingPanel.transform;
         }
 
         return null;
     }
 
+    private void EnsureDataManagers()
+    {
+        if (walletManager == null)
+        {
+            walletManager = WalletManager.Instance != null ? WalletManager.Instance : FindFirstObjectByType<WalletManager>();
+        }
+
+        if (careerCalendarManager == null)
+        {
+            careerCalendarManager = CareerCalendarManager.Instance != null ? CareerCalendarManager.Instance : FindFirstObjectByType<CareerCalendarManager>();
+        }
+    }
+
+    private void CacheSceneReferences()
+    {
+        if (trainingPanel == null)
+        {
+            trainingPanel = FindFirstObjectByType<TrainingPanel>();
+        }
+
+        if (mainPanel == null)
+        {
+            mainPanel = FindSceneGameObject("MainPanel");
+        }
+
+        if (actionPointText == null)
+        {
+            actionPointText = FindSceneComponent<TMP_Text>("ActionPointText");
+        }
+
+        if (trainingActionButton == null)
+        {
+            trainingActionButton = FindSceneComponent<Button>("TrainingActionButton");
+        }
+
+        if (restActionButton == null)
+        {
+            restActionButton = FindSceneComponent<Button>("RestActionButton");
+        }
+
+        if (shopActionButton == null)
+        {
+            shopActionButton = FindSceneComponent<Button>("ShopActionButton");
+        }
+
+        if (playerInfoActionButton == null)
+        {
+            playerInfoActionButton = FindSceneComponent<Button>("PlayerInfoActionButton");
+        }
+
+        if (matchActionButton == null)
+        {
+            matchActionButton = FindSceneComponent<Button>("MatchActionButton");
+        }
+    }
+
+    private static GameObject FindSceneGameObject(string objectName)
+    {
+        GameObject[] rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+
+        foreach (GameObject rootObject in rootObjects)
+        {
+            Transform foundTransform = FindChildRecursive(rootObject.transform, objectName);
+            if (foundTransform != null)
+            {
+                return foundTransform.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private static T FindSceneComponent<T>(string objectName) where T : Component
+    {
+        GameObject sceneObject = FindSceneGameObject(objectName);
+        return sceneObject != null ? sceneObject.GetComponent<T>() : null;
+    }
+
+    private static Transform FindChildRecursive(Transform current, string objectName)
+    {
+        if (current.name == objectName)
+        {
+            return current;
+        }
+
+        foreach (Transform child in current)
+        {
+            Transform foundChild = FindChildRecursive(child, objectName);
+            if (foundChild != null)
+            {
+                return foundChild;
+            }
+        }
+
+        return null;
+    }
+
+    private static PlayerStats LoadCareerPlayerStats()
+    {
+        PlayerStats stats = CreateDefaultCareerPlayerStats();
+        PlayerSaveManager.LoadPlayerStats(CareerPlayerSaveId, stats);
+        return stats;
+    }
+
+    private static PlayerStats CreateDefaultCareerPlayerStats()
+    {
+        PlayerStats stats = new PlayerStats();
+        stats.Power = StartingStatValue;
+        stats.Jump = StartingStatValue;
+        stats.Receive = StartingStatValue;
+        stats.Set = StartingStatValue;
+        stats.Block = StartingStatValue;
+        stats.Serve = StartingStatValue;
+        stats.Speed = StartingStatValue;
+        stats.Stamina = StartingStatValue;
+        stats.Mental = StartingStatValue;
+        return stats;
+    }
+
     private struct RestResult
     {
-        public bool Success;
         public int StaminaBefore;
         public int StaminaAfter;
         public int MentalBefore;
         public int MentalAfter;
     }
-
-    private static bool TryGetPlayerRole(out CharacterRole characterRole)
-    {
-        characterRole = null;
-
-        Player player = FindFirstObjectByType<Player>();
-        if (player == null)
-        {
-            return false;
-        }
-
-        characterRole = player.GetComponent<CharacterRole>();
-        if (characterRole == null || characterRole.PlayerData == null || characterRole.PlayerData.Stats == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
 
 }

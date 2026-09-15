@@ -87,6 +87,24 @@ public static class PlayerSaveManager
         stats.Mental = LoadStat(playerData, PlayerStatType.Mental, stats.Mental);
     }
 
+    public static void LoadPlayerStats(string playerSaveId, PlayerStats stats)
+    {
+        if (string.IsNullOrWhiteSpace(playerSaveId) || stats == null)
+        {
+            return;
+        }
+
+        stats.Power = LoadStat(playerSaveId, PlayerStatType.Power, stats.Power);
+        stats.Jump = LoadStat(playerSaveId, PlayerStatType.Jump, stats.Jump);
+        stats.Receive = LoadStat(playerSaveId, PlayerStatType.Receive, stats.Receive);
+        stats.Set = LoadStat(playerSaveId, PlayerStatType.Set, stats.Set);
+        stats.Block = LoadStat(playerSaveId, PlayerStatType.Block, stats.Block);
+        stats.Serve = LoadStat(playerSaveId, PlayerStatType.Serve, stats.Serve);
+        stats.Speed = LoadStat(playerSaveId, PlayerStatType.Speed, stats.Speed);
+        stats.Stamina = LoadStat(playerSaveId, PlayerStatType.Stamina, stats.Stamina);
+        stats.Mental = LoadStat(playerSaveId, PlayerStatType.Mental, stats.Mental);
+    }
+
     public static void SavePlayerStats(PlayerData playerData)
     {
         if (playerData == null || playerData.Stats == null)
@@ -169,6 +187,11 @@ public static class PlayerSaveManager
     private static int LoadStat(PlayerData playerData, PlayerStatType statType, int defaultValue)
     {
         return Mathf.Max(0, PlayerPrefs.GetInt(GetPlayerStatPrefsKey(playerData, statType), defaultValue));
+    }
+
+    private static int LoadStat(string playerSaveId, PlayerStatType statType, int defaultValue)
+    {
+        return Mathf.Max(0, PlayerPrefs.GetInt(GetPlayerStatPrefsKey(playerSaveId, statType), defaultValue));
     }
 
     private static void SaveStat(PlayerData playerData, PlayerStatType statType, int value)

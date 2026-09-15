@@ -2,14 +2,36 @@ using UnityEngine;
 
 public class CareerCalendarManager : MonoBehaviour
 {
+    private static CareerCalendarManager instance;
+
     [SerializeField] private int startingYear = 1;
     [SerializeField] private int startingMonth = 11;
 
+    public static CareerCalendarManager Instance => instance;
     public int CurrentYear { get; private set; }
     public int CurrentMonth { get; private set; }
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void CreateGlobalInstance()
+    {
+        if (instance != null)
+        {
+            return;
+        }
+
+        new GameObject(nameof(CareerCalendarManager)).AddComponent<CareerCalendarManager>();
+    }
+
     private void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
         LoadCareerCalendar();
     }
 

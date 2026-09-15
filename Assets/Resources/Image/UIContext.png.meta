@@ -1,0 +1,2133 @@
+fileFormatVersion: 2
+guid: da1a389f5b4f2454291f690536c04b87
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: UIContext 1_0
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 788
+        width: 230
+        height: 463
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d7c35c89b98f06b4e9321d57ef3a8ced
+      internalID: 258338826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_1
+      rect:
+        serializedVersion: 2
+        x: 287
+        y: 788
+        width: 236
+        height: 462
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53cebb86abd6b4c4bbfe976a7c97c260
+      internalID: 1712223331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_2
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 788
+        width: 235
+        height: 462
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12cb5648fb942d74387a3721e4eaced4
+      internalID: 1731570203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_3
+      rect:
+        serializedVersion: 2
+        x: 822
+        y: 788
+        width: 239
+        height: 462
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cee763bbccacf2540a9a8a5d993a7c47
+      internalID: -1237511415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_4
+      rect:
+        serializedVersion: 2
+        x: 1091
+        y: 788
+        width: 239
+        height: 462
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9bfca6fcfdf5e1646808edea53d217e3
+      internalID: -1885320239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_5
+      rect:
+        serializedVersion: 2
+        x: 1359
+        y: 1017
+        width: 220
+        height: 235
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 89d4f64740d89c742be777fda62e2121
+      internalID: -1510286260
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_6
+      rect:
+        serializedVersion: 2
+        x: 1607
+        y: 1017
+        width: 220
+        height: 235
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b6a7049e66cc64b4180d70626cf40cfd
+      internalID: -986624350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_7
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 519
+        width: 220
+        height: 237
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 188ecce3d7afddf4a8bb0efafc9441b9
+      internalID: -1475529667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_8
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 523
+        width: 220
+        height: 235
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3edd77f6458b5db48b78f74fb1e7e087
+      internalID: -1129527464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_9
+      rect:
+        serializedVersion: 2
+        x: 520
+        y: 523
+        width: 223
+        height: 235
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2e595f73528bb2469f35f09f4d0116a
+      internalID: 204609595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_10
+      rect:
+        serializedVersion: 2
+        x: 771
+        y: 752
+        width: 28
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5100f4983846cdb4caf9b28aee7b0d86
+      internalID: 93621088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_11
+      rect:
+        serializedVersion: 2
+        x: 831
+        y: 602
+        width: 263
+        height: 154
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 35c74a14114bd16488a2233eeeb40813
+      internalID: -1855311808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_12
+      rect:
+        serializedVersion: 2
+        x: 1124
+        y: 749
+        width: 73
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a0b99cba546e5db4bbe947b32a38cbd7
+      internalID: -331003902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_13
+      rect:
+        serializedVersion: 2
+        x: 1193
+        y: 748
+        width: 79
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 582b578bb88a549469ca819a9738a912
+      internalID: -1829713219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_14
+      rect:
+        serializedVersion: 2
+        x: 1302
+        y: 749
+        width: 68
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 403b375e60370c9428d5b304c2f1699c
+      internalID: 1793600836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_15
+      rect:
+        serializedVersion: 2
+        x: 1398
+        y: 754
+        width: 12
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 363ff04f31bb64148bce4751fd82a609
+      internalID: -978846253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_16
+      rect:
+        serializedVersion: 2
+        x: 1412
+        y: 752
+        width: 28
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 015beca1297747e4e87ac687fc219469
+      internalID: -671980277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_17
+      rect:
+        serializedVersion: 2
+        x: 1490
+        y: 748
+        width: 53
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 22c9f06b353951642b63eef832f372c3
+      internalID: 259857176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_18
+      rect:
+        serializedVersion: 2
+        x: 1573
+        y: 649
+        width: 210
+        height: 107
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 800d559c63257394ebbc834336e6e0e9
+      internalID: 125270139
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_19
+      rect:
+        serializedVersion: 2
+        x: 1813
+        y: 744
+        width: 75
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5ef80079728f77e479b541ccb5a42003
+      internalID: -326754594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_20
+      rect:
+        serializedVersion: 2
+        x: 1916
+        y: 750
+        width: 23
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 88f1fc4eb7b35b4469a7deaf5e7fb8b8
+      internalID: -163005816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_21
+      rect:
+        serializedVersion: 2
+        x: 778
+        y: 533
+        width: 21
+        height: 202
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7cf7cd7d0e28cff4b880c765e13092b0
+      internalID: -167413574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_22
+      rect:
+        serializedVersion: 2
+        x: 1124
+        y: 645
+        width: 132
+        height: 94
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d1f182a19e503f94599d9144e9c3c99a
+      internalID: 1445699231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_23
+      rect:
+        serializedVersion: 2
+        x: 1316
+        y: 647
+        width: 35
+        height: 93
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c458fb6769100cc4da44c32e67d2980a
+      internalID: 151288917
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_24
+      rect:
+        serializedVersion: 2
+        x: 1398
+        y: 649
+        width: 106
+        height: 70
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 67988d9076c92124aa841f5ca948120f
+      internalID: -925227463
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_25
+      rect:
+        serializedVersion: 2
+        x: 1819
+        y: 654
+        width: 69
+        height: 76
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3b1d179857b9109459f3734d9cf0c348
+      internalID: -1761590934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_26
+      rect:
+        serializedVersion: 2
+        x: 1918
+        y: 654
+        width: 57
+        height: 76
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be2574e09a6b77440a5b4638a856cce6
+      internalID: 850222684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_27
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 485
+        width: 29
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b2f3fb9ae9dc5904c90fb75b9951e037
+      internalID: 1775556852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_28
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 395
+        width: 296
+        height: 98
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b1bdf972df987c41b85eeed61050c4c
+      internalID: -606442840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_29
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 402
+        width: 361
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d16c29019b77ad4ba1a860656f43f08
+      internalID: 1575797422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_30
+      rect:
+        serializedVersion: 2
+        x: 1001
+        y: 400
+        width: 253
+        height: 95
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e9340fe694e72e4f937c9b65f68b43c
+      internalID: -1945878163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_31
+      rect:
+        serializedVersion: 2
+        x: 1282
+        y: 400
+        width: 187
+        height: 95
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 672c3d097c328984d8a76c38467adfec
+      internalID: 262070188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_32
+      rect:
+        serializedVersion: 2
+        x: 1501
+        y: 405
+        width: 91
+        height: 88
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e5a98bbdb254ae488cc9c399337f039
+      internalID: 622121355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_33
+      rect:
+        serializedVersion: 2
+        x: 1623
+        y: 412
+        width: 332
+        height: 81
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a35db8e3a460e94b9fc0d2aa2f7958f
+      internalID: -1989316405
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_34
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 392
+        width: 88
+        height: 88
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 390583d73f50e7d42b6bd7ad138f3d0e
+      internalID: 1260102143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_35
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 393
+        width: 84
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 818dc187e61e83c41b3c7d6bda59f0eb
+      internalID: -393787122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_36
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 283
+        width: 367
+        height: 77
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 702ff7cdcf5c4e94c8bcc0f2d2e8fe28
+      internalID: -2134268122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_37
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 285
+        width: 311
+        height: 75
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a0f2970ae1d6e6f4e97092b4eec5c9ff
+      internalID: -896890076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_38
+      rect:
+        serializedVersion: 2
+        x: 766
+        y: 284
+        width: 235
+        height: 76
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f0f434d6aca918243addeccdfec4e104
+      internalID: -1543828431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_39
+      rect:
+        serializedVersion: 2
+        x: 1033
+        y: 291
+        width: 150
+        height: 69
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 008bfefbb0fdc514483afe68e208c4a5
+      internalID: -181970271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_40
+      rect:
+        serializedVersion: 2
+        x: 1215
+        y: 292
+        width: 63
+        height: 70
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f1537bb2766c24b4b8ac3bd132055455
+      internalID: 234459136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_41
+      rect:
+        serializedVersion: 2
+        x: 1310
+        y: 292
+        width: 154
+        height: 68
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0301da4ba2d3c8f4ca1d8121fd2d4840
+      internalID: 1998068217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_42
+      rect:
+        serializedVersion: 2
+        x: 1495
+        y: 292
+        width: 160
+        height: 68
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc799df1620436941a561b4d42a623ae
+      internalID: 2131909918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_43
+      rect:
+        serializedVersion: 2
+        x: 1687
+        y: 293
+        width: 163
+        height: 67
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 02afe66493e51e940a97119c3ecd4e9f
+      internalID: -1798468926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_44
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 184
+        width: 157
+        height: 67
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d9f4c443e96f2a344b04b026576d0d76
+      internalID: 2051644854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_45
+      rect:
+        serializedVersion: 2
+        x: 214
+        y: 202
+        width: 36
+        height: 36
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4de9478f1ea04145976c1a17f37a63f
+      internalID: -280037429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_46
+      rect:
+        serializedVersion: 2
+        x: 265
+        y: 183
+        width: 5
+        height: 70
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a35d57dd5c134d4897b31c57bb05981
+      internalID: -1595011974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_47
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 188
+        width: 73
+        height: 63
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b33888694d2d0f4b98c4ba056bf39cb
+      internalID: -738136061
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_48
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 189
+        width: 64
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4304a4903fae54846be341e9af1ea9d1
+      internalID: 434094019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_49
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 190
+        width: 61
+        height: 61
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d27b2ce6048ac3a42bbcd029b3c98904
+      internalID: 65598368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_50
+      rect:
+        serializedVersion: 2
+        x: 591
+        y: 189
+        width: 207
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d873e39d7cb0caa4c8576265a0627400
+      internalID: 1641856856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_51
+      rect:
+        serializedVersion: 2
+        x: 830
+        y: 191
+        width: 58
+        height: 60
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d83eb739092b87e4ca1df6877f119b73
+      internalID: -1398182846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_52
+      rect:
+        serializedVersion: 2
+        x: 920
+        y: 192
+        width: 244
+        height: 61
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 40d15ce26970aa749b84fd8b452272d3
+      internalID: -1923331981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_53
+      rect:
+        serializedVersion: 2
+        x: 1196
+        y: 192
+        width: 250
+        height: 59
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10ac87814e1089644ad20b1c2b9531b3
+      internalID: 694195599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_54
+      rect:
+        serializedVersion: 2
+        x: 1476
+        y: 190
+        width: 248
+        height: 61
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1b0441fcaaa60004cb119dcb5c5a4dc8
+      internalID: -1172155218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_55
+      rect:
+        serializedVersion: 2
+        x: 1754
+        y: 198
+        width: 84
+        height: 55
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c31e209f7b4189049a170128d07113ce
+      internalID: -1870973869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_56
+      rect:
+        serializedVersion: 2
+        x: 1868
+        y: 198
+        width: 85
+        height: 55
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f8b628aefe4c507428bd965a798fad43
+      internalID: -1172879055
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_57
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 100
+        width: 61
+        height: 53
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bacf15f4cd657fa4785a90a79734e06f
+      internalID: -405656215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_58
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 100
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 63711e014d9c7f8459e06305ad7fbe44
+      internalID: -1457021999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_59
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 102
+        width: 66
+        height: 51
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ddfefd3dc6b857a4cb531f1873f8492a
+      internalID: -946334786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_60
+      rect:
+        serializedVersion: 2
+        x: 304
+        y: 102
+        width: 68
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6a8d92942455d14086f9a79379eb186
+      internalID: -1210532667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_61
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 102
+        width: 13
+        height: 51
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c9b45b0ae951d7243bbefb22a01e5632
+      internalID: -512426833
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_62
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 102
+        width: 37
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3ac26ad699dcaf4caf6ce275a17a694
+      internalID: 99933961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_63
+      rect:
+        serializedVersion: 2
+        x: 497
+        y: 102
+        width: 27
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb6c543a41142054091ddb60a497db85
+      internalID: 1650096450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_64
+      rect:
+        serializedVersion: 2
+        x: 543
+        y: 102
+        width: 22
+        height: 51
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 496a38141c3145a4ea1f78ed0befa0b9
+      internalID: 109141971
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_65
+      rect:
+        serializedVersion: 2
+        x: 593
+        y: 102
+        width: 41
+        height: 51
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2d9537ae1a3d8334291b72126971f48e
+      internalID: -737134097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_66
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 103
+        width: 6
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f85a05530fd76c4391bfeb2549e9ea8
+      internalID: 1389092593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_67
+      rect:
+        serializedVersion: 2
+        x: 688
+        y: 102
+        width: 57
+        height: 51
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19334357cf2a3ba42a50528235447c8a
+      internalID: -970445168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_68
+      rect:
+        serializedVersion: 2
+        x: 777
+        y: 102
+        width: 69
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64d3cee6085e6394982301b6390c7502
+      internalID: -335168480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_69
+      rect:
+        serializedVersion: 2
+        x: 878
+        y: 103
+        width: 58
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8dca4362e69150d499e75c0bbe1bb399
+      internalID: -1601272272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_70
+      rect:
+        serializedVersion: 2
+        x: 968
+        y: 103
+        width: 59
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 627f7ac209501cf4598920dd3c47fdc5
+      internalID: -1283349740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_71
+      rect:
+        serializedVersion: 2
+        x: 1057
+        y: 104
+        width: 269
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 143579a9fed2e2b44a654e7966ae1374
+      internalID: -1295882016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_72
+      rect:
+        serializedVersion: 2
+        x: 1357
+        y: 106
+        width: 248
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d3c5dab658f263943a30c4943f1f8763
+      internalID: -1174473232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_73
+      rect:
+        serializedVersion: 2
+        x: 1637
+        y: 107
+        width: 238
+        height: 46
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 200663cb7f3b73149b28d31476151c04
+      internalID: 101642775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_74
+      rect:
+        serializedVersion: 2
+        x: 1907
+        y: 109
+        width: 100
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c8b649e66c0a72b47ba7c914adb5cf68
+      internalID: -2001009605
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_75
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 26
+        width: 99
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: da29f4abdc76a20479388e3b19324f36
+      internalID: 971963350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_76
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 26
+        width: 87
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e1ab4bae00324c44b8016292769915b
+      internalID: 244643421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_77
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 27
+        width: 43
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7215feaa154bc01419f9a718d4644dbf
+      internalID: 386539738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_78
+      rect:
+        serializedVersion: 2
+        x: 349
+        y: 27
+        width: 104
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c8e27a7a01a082947a554b3ac185f147
+      internalID: -398978717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_79
+      rect:
+        serializedVersion: 2
+        x: 485
+        y: 27
+        width: 86
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3afb121ecb750e34c81032bd71b612d4
+      internalID: 449696000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_80
+      rect:
+        serializedVersion: 2
+        x: 603
+        y: 27
+        width: 86
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4434a23d39b5c4d488b371ed53b062a7
+      internalID: -1109196638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_81
+      rect:
+        serializedVersion: 2
+        x: 719
+        y: 27
+        width: 86
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 406845fb99d742d4ea2ae070ce754792
+      internalID: -804463913
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_82
+      rect:
+        serializedVersion: 2
+        x: 837
+        y: 27
+        width: 89
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3afc1f091a1743449a99cfadc6b06c08
+      internalID: -1808518857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_83
+      rect:
+        serializedVersion: 2
+        x: 958
+        y: 28
+        width: 43
+        height: 42
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1725f13c8f34edb45b024dc69c343f79
+      internalID: 211670125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_84
+      rect:
+        serializedVersion: 2
+        x: 1033
+        y: 28
+        width: 100
+        height: 42
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a8362cbe09e76e34882641901fb4c8e8
+      internalID: 732620427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_85
+      rect:
+        serializedVersion: 2
+        x: 1165
+        y: 28
+        width: 101
+        height: 42
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 739bed26da509114e9660d12bd0212fb
+      internalID: -343693397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UIContext 1_86
+      rect:
+        serializedVersion: 2
+        x: 1298
+        y: 30
+        width: 219
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 75c22c446c8623d4194fafdea72e0cc6
+      internalID: -1212015358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 9c3779ceb1c1257479a1a0cf425c6740
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      UIContext 1_0: 258338826
+      UIContext 1_1: 1712223331
+      UIContext 1_10: 93621088
+      UIContext 1_11: -1855311808
+      UIContext 1_12: -331003902
+      UIContext 1_13: -1829713219
+      UIContext 1_14: 1793600836
+      UIContext 1_15: -978846253
+      UIContext 1_16: -671980277
+      UIContext 1_17: 259857176
+      UIContext 1_18: 125270139
+      UIContext 1_19: -326754594
+      UIContext 1_2: 1731570203
+      UIContext 1_20: -163005816
+      UIContext 1_21: -167413574
+      UIContext 1_22: 1445699231
+      UIContext 1_23: 151288917
+      UIContext 1_24: -925227463
+      UIContext 1_25: -1761590934
+      UIContext 1_26: 850222684
+      UIContext 1_27: 1775556852
+      UIContext 1_28: -606442840
+      UIContext 1_29: 1575797422
+      UIContext 1_3: -1237511415
+      UIContext 1_30: -1945878163
+      UIContext 1_31: 262070188
+      UIContext 1_32: 622121355
+      UIContext 1_33: -1989316405
+      UIContext 1_34: 1260102143
+      UIContext 1_35: -393787122
+      UIContext 1_36: -2134268122
+      UIContext 1_37: -896890076
+      UIContext 1_38: -1543828431
+      UIContext 1_39: -181970271
+      UIContext 1_4: -1885320239
+      UIContext 1_40: 234459136
+      UIContext 1_41: 1998068217
+      UIContext 1_42: 2131909918
+      UIContext 1_43: -1798468926
+      UIContext 1_44: 2051644854
+      UIContext 1_45: -280037429
+      UIContext 1_46: -1595011974
+      UIContext 1_47: -738136061
+      UIContext 1_48: 434094019
+      UIContext 1_49: 65598368
+      UIContext 1_5: -1510286260
+      UIContext 1_50: 1641856856
+      UIContext 1_51: -1398182846
+      UIContext 1_52: -1923331981
+      UIContext 1_53: 694195599
+      UIContext 1_54: -1172155218
+      UIContext 1_55: -1870973869
+      UIContext 1_56: -1172879055
+      UIContext 1_57: -405656215
+      UIContext 1_58: -1457021999
+      UIContext 1_59: -946334786
+      UIContext 1_6: -986624350
+      UIContext 1_60: -1210532667
+      UIContext 1_61: -512426833
+      UIContext 1_62: 99933961
+      UIContext 1_63: 1650096450
+      UIContext 1_64: 109141971
+      UIContext 1_65: -737134097
+      UIContext 1_66: 1389092593
+      UIContext 1_67: -970445168
+      UIContext 1_68: -335168480
+      UIContext 1_69: -1601272272
+      UIContext 1_7: -1475529667
+      UIContext 1_70: -1283349740
+      UIContext 1_71: -1295882016
+      UIContext 1_72: -1174473232
+      UIContext 1_73: 101642775
+      UIContext 1_74: -2001009605
+      UIContext 1_75: 971963350
+      UIContext 1_76: 244643421
+      UIContext 1_77: 386539738
+      UIContext 1_78: -398978717
+      UIContext 1_79: 449696000
+      UIContext 1_8: -1129527464
+      UIContext 1_80: -1109196638
+      UIContext 1_81: -804463913
+      UIContext 1_82: -1808518857
+      UIContext 1_83: 211670125
+      UIContext 1_84: 732620427
+      UIContext 1_85: -343693397
+      UIContext 1_86: -1212015358
+      UIContext 1_9: 204609595
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

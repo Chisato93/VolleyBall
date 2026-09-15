@@ -16,9 +16,7 @@ public class MatchManager : MonoBehaviour
     [SerializeField] private bool showDebugGui = true;
     [SerializeField] private PlayerActionController playerActionController;
 #endif
-    [SerializeField] private CareerCalendarManager careerCalendarManager;
-    [SerializeField] private TrainingSelectionUI trainingSelectionUI;
-    [SerializeField] private GameFlowManager gameFlowManager;
+    private CareerCalendarManager careerCalendarManager;
 
     public MatchState CurrentState { get; private set; } = MatchState.None;
     public TeamSide ServingTeam => score.ServingTeam;
@@ -53,22 +51,12 @@ public class MatchManager : MonoBehaviour
     {
         if (careerCalendarManager == null)
         {
-            careerCalendarManager = FindFirstObjectByType<CareerCalendarManager>();
+            careerCalendarManager = CareerCalendarManager.Instance != null ? CareerCalendarManager.Instance : FindFirstObjectByType<CareerCalendarManager>();
         }
 
         if (careerCalendarManager == null)
         {
             careerCalendarManager = new GameObject("CareerCalendarManager").AddComponent<CareerCalendarManager>();
-        }
-
-        if (trainingSelectionUI == null)
-        {
-            trainingSelectionUI = FindFirstObjectByType<TrainingSelectionUI>();
-        }
-
-        if (gameFlowManager == null)
-        {
-            gameFlowManager = FindFirstObjectByType<GameFlowManager>();
         }
 
 #if UNITY_EDITOR
@@ -81,7 +69,7 @@ public class MatchManager : MonoBehaviour
 
     private void StartMatchIfNeeded()
     {
-        if (CurrentState == MatchState.None && gameFlowManager == null)
+        if (CurrentState == MatchState.None)
         {
             StartMatch();
         }
@@ -504,14 +492,18 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
-        if (gameFlowManager != null)
+        ShowMatchSceneResult();
+    }
+
+    private void ShowMatchSceneResult()
+    {
+        MatchResultUI resultUI = FindFirstObjectByType<MatchResultUI>();
+        if (resultUI == null)
         {
-            gameFlowManager.OnMatchEnded();
+            resultUI = new GameObject("MatchResultUI").AddComponent<MatchResultUI>();
         }
-        else if (trainingSelectionUI != null)
-        {
-            trainingSelectionUI.ShowRandomOptions();
-        }
+
+        resultUI.Show(this);
     }
 
     private static TeamSide GetOppositeTeam(TeamSide team)

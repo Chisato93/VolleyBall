@@ -2,12 +2,34 @@ using UnityEngine;
 
 public class WalletManager : MonoBehaviour
 {
+    private static WalletManager instance;
+
     [SerializeField] private int startingMoney;
 
+    public static WalletManager Instance => instance;
     public int CurrentMoney { get; private set; }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void CreateGlobalInstance()
+    {
+        if (instance != null)
+        {
+            return;
+        }
+
+        new GameObject(nameof(WalletManager)).AddComponent<WalletManager>();
+    }
 
     private void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
         CurrentMoney = PlayerSaveManager.LoadMoney(startingMoney);
     }
 
