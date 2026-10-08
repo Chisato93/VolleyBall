@@ -1,0 +1,46 @@
+5x4 inventory slot render process
+
+Goal
+- Keep one fixed 5x4 inventory slot grid.
+- When an inventory tab changes, do not switch whole tab panel objects.
+- Clear the same 20 slots and render only items that match the selected tab.
+
+Implementation
+- Add ItemCategory enum: Head, Body, Shoes, Accessory.
+- Add ItemData ScriptableObject with item name, category, and icon.
+- Add InventorySlotUI for one slot.
+- InventorySlotUI.SetItem renders an item.
+- InventorySlotUI.Clear makes the slot empty.
+- Update InventoryPanel so it owns one fixed list of 20 slots.
+- InventoryPanel.SetActiveTab(index) clears the slots and renders matching items.
+- Tab index mapping:
+  - 0: All
+  - 1: Head
+  - 2: Body
+  - 3: Shoes
+  - 4: Accessory
+
+Scene behavior
+- InventoryPanel finds the child object named Slots if slotsParent is not assigned.
+- MainScene keeps one Slots object with a GridLayoutGroup already attached.
+- MainScene keeps 20 InventorySlotUI children under Slots.
+- MainScene keeps InventoryTooltipPanel and InventoryDragRoot in the Inventory hierarchy.
+- InventoryPanel only uses hierarchy objects that already exist.
+
+Unity check
+- Create ItemData assets from Assets > Create > Volleyball > Item Data.
+- Add several ItemData assets to InventoryPanel.ownedItems.
+- Open MainScene and enter the equipment inventory view.
+- Press All, Head, Body, Shoes, and Accessory tabs.
+- Confirm the slot count stays 20 and only slot contents change.
+
+Fake test items
+- Added Assets/Data/Items/Test_Cap.asset as Head.
+- Added Assets/Data/Items/Test_Hairband.asset as Head.
+- Added Assets/Data/Items/Test_Shirt.asset as Body.
+- Added Assets/Data/Items/Test_Jacket.asset as Body.
+- Added Assets/Data/Items/Test_Sneakers.asset as Shoes.
+- Added Assets/Data/Items/Test_KneePads.asset as Shoes.
+- Added Assets/Data/Items/Test_Wristband.asset as Accessory.
+- Added Assets/Data/Items/Test_Charm.asset as Accessory.
+- Linked all fake items to InventoryPanel.ownedItems in MainScene.

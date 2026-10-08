@@ -32,7 +32,6 @@ public class TrainingPanel : MonoBehaviour
 
     public void Show()
     {
-        gameObject.SetActive(true);
         CacheSceneReferences();
         BindReturnHomeButton();
         BindResultCloseButton();
@@ -52,8 +51,6 @@ public class TrainingPanel : MonoBehaviour
             trainingPanelView.Hide();
             return;
         }
-
-        gameObject.SetActive(false);
     }
 
     private void ShowRandomOptions()
