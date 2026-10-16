@@ -111,6 +111,7 @@ public static class GameFlowStateManager
         PlayerSaveManager.ResetMoneySave(StartingMoney);
         PlayerSaveManager.ResetCareerSave(StartingYear, StartingMonth);
         PlayerSaveManager.ResetSeasonCoachEvaluationScore();
+        PlayerSaveManager.ResetPurchasedItems();
         MatchHistoryStore.Clear();
         PlayerSaveManager.SaveSelectedPosition(selectedPosition);
 

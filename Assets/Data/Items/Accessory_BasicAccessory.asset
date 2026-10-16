@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed57d2352b6a4b69a71a1ef7b5c8fe4a, type: 3}
+  m_Name: Accessory_BasicAccessory
+  m_EditorClassIdentifier: 
+  sellPrice: 25
+  itemName: "일반 액세서리"
+  rarity: 0
+  minimumOptionCount: 1
+  maximumOptionCount: 2
+  minimumOptionAmount: 1
+  maximumOptionAmount: 3
+  category: 3
+  icon: {fileID: -493768383, guid: 25b616fdead701c43812c6f769924b7b, type: 3}
+  statBonuses:
+  - statType: 8
+    amount: 2
+  setEffects: []

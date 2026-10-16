@@ -13,66 +13,27 @@ public class ScreenTransitionUI : MonoBehaviour
     [SerializeField] private float fadeInDuration = 0.25f;
     [SerializeField] private float quickFadeDuration = 0.12f;
 
-    private GameObject overlayObject;
-    private CanvasGroup canvasGroup;
-    private TMP_Text loadingText;
+    [SerializeField] private GameObject overlayObject;
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private TMP_Text loadingText;
     private TMP_Text fontSource;
     private bool isTransitioning;
 
     public bool IsTransitioning => isTransitioning;
 
-    public void Initialize(Transform uiRoot, TMP_Text sourceText)
+    public void Initialize(TMP_Text sourceText)
     {
         fontSource = sourceText;
-
-        if (overlayObject != null)
+        if (overlayObject == null || canvasGroup == null || loadingText == null)
         {
-            ApplyFontSource();
+            Debug.LogError("ScreenTransitionUI의 씬 UI 연결이 비어 있습니다.", this);
             return;
         }
 
-        if (uiRoot == null)
-        {
-            return;
-        }
-
-        overlayObject = new GameObject("ScreenTransitionOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(CanvasGroup));
-        overlayObject.transform.SetParent(uiRoot, false);
-
-        RectTransform overlayTransform = overlayObject.GetComponent<RectTransform>();
-        overlayTransform.anchorMin = Vector2.zero;
-        overlayTransform.anchorMax = Vector2.one;
-        overlayTransform.offsetMin = Vector2.zero;
-        overlayTransform.offsetMax = Vector2.zero;
-
-        Image overlayImage = overlayObject.GetComponent<Image>();
-        overlayImage.color = Color.black;
-        overlayImage.raycastTarget = true;
-
-        canvasGroup = overlayObject.GetComponent<CanvasGroup>();
+        ApplyFontSource();
         canvasGroup.alpha = 0f;
         canvasGroup.blocksRaycasts = false;
         canvasGroup.interactable = false;
-
-        GameObject textObject = new GameObject("ScreenTransitionText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(overlayObject.transform, false);
-
-        RectTransform textTransform = textObject.GetComponent<RectTransform>();
-        textTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        textTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        textTransform.anchoredPosition = Vector2.zero;
-        textTransform.sizeDelta = new Vector2(520f, 96f);
-
-        loadingText = textObject.GetComponent<TMP_Text>();
-        loadingText.text = DefaultLoadingText;
-        loadingText.color = Color.white;
-        loadingText.fontSize = 34f;
-        loadingText.enableAutoSizing = true;
-        loadingText.fontSizeMin = 16f;
-        loadingText.fontSizeMax = 34f;
-        loadingText.alignment = TextAlignmentOptions.Center;
-
-        ApplyFontSource();
         overlayObject.SetActive(false);
     }
 

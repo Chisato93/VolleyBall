@@ -35,7 +35,9 @@ public class ItemTooltipUI : MonoBehaviour
 
         StringBuilder builder = new StringBuilder();
         builder.AppendLine($"<b>{Escape(item.ItemName)}</b>");
-        builder.AppendLine(GetCategoryName(item.Category));
+        builder.AppendLine($"{item.RarityName} · {GetCategoryName(item.Category)}");
+        if (item.EnhancementAttempted)
+            builder.AppendLine($"강화 완료: +{item.EnhancementLevel} / 재강화 불가");
         bool hasOptions = false;
         bool hasSection = false;
 
@@ -57,20 +59,25 @@ public class ItemTooltipUI : MonoBehaviour
         }
 
         hasSection = false;
-        foreach (string option in item.AdditionalOptions)
+        foreach (ItemStatBonus option in item.AdditionalStatBonuses)
         {
-            if (string.IsNullOrWhiteSpace(option))
-            {
-                continue;
-            }
-
             if (!hasSection)
             {
                 AppendHeading(builder, "추가 옵션");
                 hasSection = true;
             }
+            builder.AppendLine(HighlightActive($"{GetStatName(option.statType)} {option.amount:+0;-0;0}", isEquipped));
+            hasOptions = true;
+        }
 
-            builder.AppendLine(HighlightActive(Escape(option), isEquipped));
+        foreach (ItemProbabilityBonus option in item.AdditionalProbabilityBonuses)
+        {
+            if (!hasSection)
+            {
+                AppendHeading(builder, "추가 옵션");
+                hasSection = true;
+            }
+            builder.AppendLine(HighlightActive($"{GetProbabilityName(option.effectType)} +{option.percent}%", isEquipped));
             hasOptions = true;
         }
 
@@ -130,6 +137,18 @@ public class ItemTooltipUI : MonoBehaviour
             case ItemCategory.Shoes: return "신발";
             case ItemCategory.Accessory: return "장신구";
             default: return "장비";
+        }
+    }
+
+    private static string GetProbabilityName(ItemProbabilityType type)
+    {
+        switch (type)
+        {
+            case ItemProbabilityType.AttackSuccess: return "공격 성공 확률";
+            case ItemProbabilityType.ServeSuccess: return "서브 성공 확률";
+            case ItemProbabilityType.ReceiveSuccess: return "리시브 성공 확률";
+            case ItemProbabilityType.BlockSuccess: return "블록 성공 확률";
+            default: return "성공 확률";
         }
     }
 

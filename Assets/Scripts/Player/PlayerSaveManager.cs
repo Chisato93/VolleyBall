@@ -2,6 +2,89 @@ using UnityEngine;
 
 public static class PlayerSaveManager
 {
+    [System.Serializable]
+    private class PurchasedItemsData
+    {
+        public string[] itemIds = System.Array.Empty<string>();
+    }
+
+    private const string PurchasedItemsPrefsKey = "PurchasedInventoryItems";
+
+    public static string[] LoadPurchasedItemIds()
+    {
+        string json = PlayerPrefs.GetString(PurchasedItemsPrefsKey, string.Empty);
+        if (string.IsNullOrEmpty(json))
+        {
+            return System.Array.Empty<string>();
+        }
+
+        return JsonUtility.FromJson<PurchasedItemsData>(json)?.itemIds ?? System.Array.Empty<string>();
+    }
+
+    public static void AddPurchasedItemId(string itemId)
+    {
+        var ids = new System.Collections.Generic.List<string>(LoadPurchasedItemIds());
+        ids.Add(itemId);
+        PlayerPrefs.SetString(PurchasedItemsPrefsKey, JsonUtility.ToJson(new PurchasedItemsData { itemIds = ids.ToArray() }));
+        PlayerPrefs.Save();
+    }
+
+    private const string OwnedItemsPrefsKey = "OwnedInventoryItems";
+
+    public static string[] LoadOwnedItemIds()
+    {
+        if (!PlayerPrefs.HasKey(OwnedItemsPrefsKey)) return null;
+        return JsonUtility.FromJson<PurchasedItemsData>(PlayerPrefs.GetString(OwnedItemsPrefsKey))?.itemIds
+            ?? System.Array.Empty<string>();
+    }
+
+    public static void SaveOwnedItemIds(string[] ids)
+    {
+        PlayerPrefs.SetString(OwnedItemsPrefsKey, JsonUtility.ToJson(new PurchasedItemsData { itemIds = ids }));
+        PlayerPrefs.Save();
+    }
+
+    [System.Serializable]
+    public class OwnedItemRecord
+    {
+        public string itemId;
+        public int enhancementLevel;
+        public bool enhancementAttempted;
+        public bool hasRolledOptions;
+        public ItemStatBonus[] additionalStatBonuses;
+        public ItemProbabilityBonus[] additionalProbabilityBonuses;
+        public int optionRulesVersion;
+    }
+
+    [System.Serializable]
+    private class OwnedItemRecords
+    {
+        public OwnedItemRecord[] items;
+    }
+
+    private const string OwnedItemRecordsKey = "OwnedInventoryItemRecords";
+
+    public static OwnedItemRecord[] LoadOwnedItemRecords()
+    {
+        if (!PlayerPrefs.HasKey(OwnedItemRecordsKey)) return null;
+        return JsonUtility.FromJson<OwnedItemRecords>(PlayerPrefs.GetString(OwnedItemRecordsKey))?.items
+            ?? System.Array.Empty<OwnedItemRecord>();
+    }
+
+    public static void SaveOwnedItemRecords(OwnedItemRecord[] items)
+    {
+        PlayerPrefs.SetString(OwnedItemRecordsKey, JsonUtility.ToJson(new OwnedItemRecords { items = items }));
+        PlayerPrefs.Save();
+    }
+
+    public static void ResetPurchasedItems()
+    {
+        PlayerPrefs.DeleteKey(PurchasedItemsPrefsKey);
+        PlayerPrefs.DeleteKey(OwnedItemsPrefsKey);
+        PlayerPrefs.DeleteKey(OwnedItemRecordsKey);
+        PlayerPrefs.Save();
+    }
+
     private const string MoneyPrefsKey = "PlayerOwnedMoney";
     private const string CareerYearPrefsKey = "CareerCurrentYear";
     private const string CareerMonthPrefsKey = "CareerCurrentMonth";

@@ -28,6 +28,9 @@ public class GameFlowManager : MonoBehaviour
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button resultCloseButton;
     [SerializeField] private ScreenTransitionUI screenTransitionUI;
+    [SerializeField] private ShopPanel shopPanel;
+    [SerializeField] private StatusPanel statusPanel;
+    [SerializeField] private Button homeShopButton;
 
     private int remainingActionPoints;
     private ResultCloseAction resultCloseAction;
@@ -45,42 +48,11 @@ public class GameFlowManager : MonoBehaviour
 
     private void Awake()
     {
-        CacheSceneReferences();
-
         EnsureDataManagers();
-
-        CreateMissingMainControls();
-        CreateMissingResultPanel();
-        EnsureScreenTransitionUI();
-
-        if (trainingActionButton != null)
+        SetResultPanelActive(false);
+        if (screenTransitionUI != null)
         {
-            trainingActionButton.onClick.RemoveListener(StartTrainingAction);
-            trainingActionButton.onClick.AddListener(StartTrainingAction);
-        }
-
-        if (restActionButton != null)
-        {
-            restActionButton.onClick.RemoveListener(StartRestAction);
-            restActionButton.onClick.AddListener(StartRestAction);
-        }
-
-        if (shopActionButton != null)
-        {
-            shopActionButton.onClick.RemoveListener(StartShopAction);
-            shopActionButton.onClick.AddListener(StartShopAction);
-        }
-
-        if (playerInfoActionButton != null)
-        {
-            playerInfoActionButton.onClick.RemoveListener(StartPlayerInfoAction);
-            playerInfoActionButton.onClick.AddListener(StartPlayerInfoAction);
-        }
-
-        if (resultCloseButton != null)
-        {
-            resultCloseButton.onClick.RemoveListener(HandleResultClose);
-            resultCloseButton.onClick.AddListener(HandleResultClose);
+            screenTransitionUI.Initialize(actionPointText);
         }
     }
 
@@ -114,6 +86,11 @@ public class GameFlowManager : MonoBehaviour
 
     private void ShowMainPanel()
     {
+        if (shopPanel != null)
+        {
+            shopPanel.gameObject.SetActive(false);
+        }
+
         if (trainingPanel != null)
         {
             trainingPanel.Hide();
@@ -193,7 +170,7 @@ public class GameFlowManager : MonoBehaviour
         ActionPointsChanged?.Invoke(remainingActionPoints, maxActionPoints);
     }
 
-    private void StartRestAction()
+    public void StartRestAction()
     {
         if (remainingActionPoints <= 0)
         {
@@ -252,29 +229,40 @@ public class GameFlowManager : MonoBehaviour
         ShowMainPanel();
     }
 
-    private void StartShopAction()
+    public void StartShopAction()
     {
         PlayQuickFade(StartShopActionNow);
     }
 
     private void StartShopActionNow()
     {
-        resultCloseAction = ResultCloseAction.ReturnToVillage;
+        if (shopPanel == null)
+        {
+            Debug.LogError("MainScene의 GameFlowManager에 ShopCanvas의 ShopPanel을 연결해야 합니다.", this);
+            return;
+        }
+
+        statusPanel?.Hide();
+        if (trainingPanel != null)
+        {
+            trainingPanel.Hide();
+        }
 
         if (mainPanel != null)
         {
             mainPanel.SetActive(false);
         }
 
-        SetResultPanelActive(true);
-
-        if (resultText != null)
-        {
-            resultText.text = BuildShopText();
-        }
+        SetResultPanelActive(false);
+        shopPanel.Open();
     }
 
-    private void StartPlayerInfoAction()
+    public void CloseShop()
+    {
+        PlayQuickFade(ShowMainPanel);
+    }
+
+    public void StartPlayerInfoAction()
     {
         PlayQuickFade(StartPlayerInfoActionNow);
     }
@@ -310,21 +298,6 @@ public class GameFlowManager : MonoBehaviour
         }
 
         SceneManager.LoadScene((int)SceneEnums.MatchScene);
-    }
-
-    private string BuildShopText()
-    {
-        EnsureDataManagers();
-        int money = walletManager != null ? walletManager.CurrentMoney : 0;
-
-        StringBuilder builder = new StringBuilder();
-        builder.AppendLine("상점");
-        builder.AppendLine();
-        builder.AppendLine($"보유 돈: {money:N0}원");
-        builder.AppendLine();
-        builder.AppendLine("상점 기능은 준비 중입니다.");
-        builder.AppendLine("나중에 장비, 훈련 보조 아이템, 회복 아이템 등을 여기에 추가할 수 있습니다.");
-        return builder.ToString();
     }
 
     private string BuildPlayerInfoText()
@@ -368,7 +341,7 @@ public class GameFlowManager : MonoBehaviour
         resultText.text = $"휴식 완료!\n체력 +{result.StaminaAfter - result.StaminaBefore} ({result.StaminaBefore} -> {result.StaminaAfter})\n멘탈 +{result.MentalAfter - result.MentalBefore} ({result.MentalBefore} -> {result.MentalAfter})\n남은 행동력: {remainingActionPoints} / {maxActionPoints}";
     }
 
-    private void HandleResultClose()
+    public void HandleResultClose()
     {
         PlayQuickFade(HandleResultCloseNow);
     }
@@ -390,181 +363,12 @@ public class GameFlowManager : MonoBehaviour
         resultCloseAction = ResultCloseAction.None;
     }
 
-    private void CreateMissingMainControls()
-    {
-        if (trainingActionButton == null || mainPanel == null)
-        {
-            return;
-        }
-
-        RectTransform trainingTransform = trainingActionButton.GetComponent<RectTransform>();
-        if (trainingTransform != null)
-        {
-            trainingTransform.anchoredPosition = new Vector2(0f, 72f);
-        }
-
-        if (restActionButton == null)
-        {
-            restActionButton = CreateVillageButton("RestActionButton", "휴식", -16f);
-        }
-        else
-        {
-            restActionButton.gameObject.SetActive(true);
-
-            RectTransform restTransform = restActionButton.GetComponent<RectTransform>();
-            if (restTransform != null)
-            {
-                restTransform.anchoredPosition = new Vector2(0f, -16f);
-            }
-
-            TMP_Text restButtonText = restActionButton.GetComponentInChildren<TMP_Text>(true);
-            if (restButtonText != null)
-            {
-                restButtonText.text = "휴식";
-            }
-        }
-
-        RectTransform mainPanelTransform = mainPanel.GetComponent<RectTransform>();
-        if (mainPanelTransform != null)
-        {
-            mainPanelTransform.sizeDelta = new Vector2(mainPanelTransform.sizeDelta.x, 620f);
-        }
-
-        RectTransform actionPointTransform = actionPointText != null ? actionPointText.GetComponent<RectTransform>() : null;
-        if (actionPointTransform != null)
-        {
-            actionPointTransform.anchoredPosition = new Vector2(0f, 184f);
-            actionPointTransform.sizeDelta = new Vector2(460f, 156f);
-        }
-
-        if (shopActionButton == null)
-        {
-            shopActionButton = CreateVillageButton("ShopActionButton", "상점", -104f);
-        }
-
-        if (playerInfoActionButton == null)
-        {
-            playerInfoActionButton = CreateVillageButton("PlayerInfoActionButton", "내정보", -192f);
-        }
-
-        if (matchActionButton == null)
-        {
-            matchActionButton = CreateVillageButton("MatchActionButton", "경기 시작", -280f);
-        }
-
-        TMP_Text trainingButtonText = trainingActionButton.GetComponentInChildren<TMP_Text>(true);
-        if (trainingButtonText != null)
-        {
-            trainingButtonText.text = "훈련";
-        }
-    }
-
-    private Button CreateVillageButton(string buttonName, string buttonText, float yPosition)
-    {
-        Button button = Instantiate(trainingActionButton, mainPanel.transform);
-        button.name = buttonName;
-        button.onClick.RemoveAllListeners();
-
-        RectTransform buttonTransform = button.GetComponent<RectTransform>();
-        if (buttonTransform != null)
-        {
-            buttonTransform.anchoredPosition = new Vector2(0f, yPosition);
-        }
-
-        TMP_Text text = button.GetComponentInChildren<TMP_Text>(true);
-        if (text != null)
-        {
-            text.text = buttonText;
-        }
-
-        return button;
-    }
-
-    private void CreateMissingResultPanel()
-    {
-        if (resultPanel != null || mainPanel == null)
-        {
-            SetResultPanelActive(false);
-            return;
-        }
-
-        resultPanel = new GameObject("GameFlowResultPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        resultPanel.transform.SetParent(mainPanel.transform.parent, false);
-
-        RectTransform panelTransform = resultPanel.GetComponent<RectTransform>();
-        panelTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        panelTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        panelTransform.anchoredPosition = Vector2.zero;
-        panelTransform.sizeDelta = new Vector2(620f, 520f);
-
-        Image panelImage = resultPanel.GetComponent<Image>();
-        panelImage.color = new Color(0.08f, 0.1f, 0.12f, 0.94f);
-
-        GameObject textObject = new GameObject("GameFlowResultText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(resultPanel.transform, false);
-        RectTransform textTransform = textObject.GetComponent<RectTransform>();
-        textTransform.anchorMin = new Vector2(0f, 0f);
-        textTransform.anchorMax = new Vector2(1f, 1f);
-        textTransform.offsetMin = new Vector2(32f, 112f);
-        textTransform.offsetMax = new Vector2(-32f, -32f);
-
-        resultText = textObject.GetComponent<TMP_Text>();
-        resultText.color = Color.white;
-        if (actionPointText != null)
-        {
-            resultText.font = actionPointText.font;
-            resultText.fontSharedMaterial = actionPointText.fontSharedMaterial;
-        }
-
-        resultText.fontSize = 26f;
-        resultText.enableAutoSizing = true;
-        resultText.fontSizeMin = 14f;
-        resultText.fontSizeMax = 28f;
-        resultText.alignment = TextAlignmentOptions.TopLeft;
-
-        resultCloseButton = Instantiate(trainingActionButton, resultPanel.transform);
-        resultCloseButton.name = "GameFlowResultCloseButton";
-        resultCloseButton.onClick.RemoveAllListeners();
-
-        RectTransform buttonTransform = resultCloseButton.GetComponent<RectTransform>();
-        if (buttonTransform != null)
-        {
-            buttonTransform.anchorMin = new Vector2(0.5f, 0f);
-            buttonTransform.anchorMax = new Vector2(0.5f, 0f);
-            buttonTransform.anchoredPosition = new Vector2(0f, 48f);
-            buttonTransform.sizeDelta = new Vector2(240f, 64f);
-        }
-
-        TMP_Text closeButtonText = resultCloseButton.GetComponentInChildren<TMP_Text>(true);
-        if (closeButtonText != null)
-        {
-            closeButtonText.text = "확인";
-        }
-
-        SetResultPanelActive(false);
-    }
-
     private void SetResultPanelActive(bool isActive)
     {
         if (resultPanel != null)
         {
             resultPanel.SetActive(isActive);
         }
-    }
-
-    private void EnsureScreenTransitionUI()
-    {
-        if (screenTransitionUI == null)
-        {
-            screenTransitionUI = FindFirstObjectByType<ScreenTransitionUI>();
-        }
-
-        if (screenTransitionUI == null)
-        {
-            screenTransitionUI = gameObject.AddComponent<ScreenTransitionUI>();
-        }
-
-        screenTransitionUI.Initialize(GetUiRoot(), actionPointText);
     }
 
     private void PlayScreenTransition(string loadingMessage, Action transitionAction)
@@ -589,21 +393,6 @@ public class GameFlowManager : MonoBehaviour
         screenTransitionUI.TryPlayQuick(transitionAction);
     }
 
-    private Transform GetUiRoot()
-    {
-        if (mainPanel != null && mainPanel.transform.parent != null)
-        {
-            return mainPanel.transform.parent;
-        }
-
-        if (trainingPanel != null)
-        {
-            return trainingPanel.transform;
-        }
-
-        return null;
-    }
-
     private void EnsureDataManagers()
     {
         if (walletManager == null)
@@ -615,90 +404,6 @@ public class GameFlowManager : MonoBehaviour
         {
             careerCalendarManager = CareerCalendarManager.Instance != null ? CareerCalendarManager.Instance : FindFirstObjectByType<CareerCalendarManager>();
         }
-    }
-
-    private void CacheSceneReferences()
-    {
-        if (trainingPanel == null)
-        {
-            trainingPanel = FindFirstObjectByType<TrainingPanel>();
-        }
-
-        if (mainPanel == null)
-        {
-            mainPanel = FindSceneGameObject("MainPanel");
-        }
-
-        if (actionPointText == null)
-        {
-            actionPointText = FindSceneComponent<TMP_Text>("ActionPointText");
-        }
-
-        if (trainingActionButton == null)
-        {
-            trainingActionButton = FindSceneComponent<Button>("TrainingActionButton");
-        }
-
-        if (restActionButton == null)
-        {
-            restActionButton = FindSceneComponent<Button>("RestActionButton");
-        }
-
-        if (shopActionButton == null)
-        {
-            shopActionButton = FindSceneComponent<Button>("ShopActionButton");
-        }
-
-        if (playerInfoActionButton == null)
-        {
-            playerInfoActionButton = FindSceneComponent<Button>("PlayerInfoActionButton");
-        }
-
-        if (matchActionButton == null)
-        {
-            matchActionButton = FindSceneComponent<Button>("MatchActionButton");
-        }
-    }
-
-    private static GameObject FindSceneGameObject(string objectName)
-    {
-        GameObject[] rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
-
-        foreach (GameObject rootObject in rootObjects)
-        {
-            Transform foundTransform = FindChildRecursive(rootObject.transform, objectName);
-            if (foundTransform != null)
-            {
-                return foundTransform.gameObject;
-            }
-        }
-
-        return null;
-    }
-
-    private static T FindSceneComponent<T>(string objectName) where T : Component
-    {
-        GameObject sceneObject = FindSceneGameObject(objectName);
-        return sceneObject != null ? sceneObject.GetComponent<T>() : null;
-    }
-
-    private static Transform FindChildRecursive(Transform current, string objectName)
-    {
-        if (current.name == objectName)
-        {
-            return current;
-        }
-
-        foreach (Transform child in current)
-        {
-            Transform foundChild = FindChildRecursive(child, objectName);
-            if (foundChild != null)
-            {
-                return foundChild;
-            }
-        }
-
-        return null;
     }
 
     private static PlayerStats LoadCareerPlayerStats()

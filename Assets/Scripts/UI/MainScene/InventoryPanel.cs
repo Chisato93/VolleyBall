@@ -15,6 +15,7 @@ public class InventoryPanel : TabContentPanel
     [SerializeField] private ItemTooltipUI tooltipView;
     [SerializeField] private RectTransform dragPreviewRoot;
     [SerializeField] private List<ItemData> ownedItems = new List<ItemData>();
+    [SerializeField] private ItemData[] purchaseCatalog;
 
     private readonly List<InventorySlotUI> slotList = new List<InventorySlotUI>();
     private readonly List<InventorySlotUI> equipmentSlots = new List<InventorySlotUI>();
@@ -27,6 +28,7 @@ public class InventoryPanel : TabContentPanel
     private int draggedItemOriginalSiblingIndex;
     private bool dragCompleted;
     private int currentTabIndex;
+    private bool hasInitializedOwnedItems;
     private readonly Vector3[] canvasCorners = new Vector3[4];
 
     public static InventoryPanel ActivePanel { get; private set; }
@@ -48,8 +50,89 @@ public class InventoryPanel : TabContentPanel
 
     private void Start()
     {
-        ResetDisplayedItems();
+        InitializeOwnedItems();
         RenderCurrentTab();
+    }
+
+    private void InitializeOwnedItems()
+    {
+        if (hasInitializedOwnedItems)
+        {
+            return;
+        }
+
+        hasInitializedOwnedItems = true;
+        PlayerSaveManager.OwnedItemRecord[] records = PlayerSaveManager.LoadOwnedItemRecords();
+        if (records != null)
+        {
+            ownedItems.Clear();
+            foreach (PlayerSaveManager.OwnedItemRecord record in records)
+            {
+                ItemData source = FindCatalogItem(record.itemId);
+                if (source != null)
+                {
+                    ItemData instance = source.CreateOwnedInstance(record.enhancementLevel, record.enhancementAttempted);
+                    if (record.hasRolledOptions)
+                    {
+                        if (record.optionRulesVersion < 2) instance.MigrateLegacyOptions(record.additionalStatBonuses);
+                        else
+                        {
+                            instance.RestoreAdditionalStatBonuses(record.additionalStatBonuses);
+                            instance.RestoreAdditionalProbabilityBonuses(record.additionalProbabilityBonuses);
+                        }
+                    }
+                    ownedItems.Add(instance);
+                }
+            }
+        }
+        else
+        {
+            string[] savedItems = PlayerSaveManager.LoadOwnedItemIds();
+            if (savedItems != null) ownedItems.Clear();
+            foreach (string id in savedItems ?? PlayerSaveManager.LoadPurchasedItemIds())
+            {
+                ItemData source = FindCatalogItem(id);
+                if (source != null) ownedItems.Add(source);
+            }
+            for (int i = 0; i < ownedItems.Count; i++)
+            {
+                if (ownedItems[i] != null) ownedItems[i] = ownedItems[i].CreateOwnedInstance();
+            }
+        }
+
+        ResetDisplayedItems();
+        SaveOwnership();
+    }
+
+    private ItemData FindCatalogItem(string id)
+    {
+        if (purchaseCatalog == null) return null;
+        foreach (ItemData item in purchaseCatalog)
+        {
+            if (item != null && item.name == id) return item;
+        }
+        return null;
+    }
+
+    public bool CanAddPurchasedItem(ItemCategory category)
+    {
+        InitializeOwnedItems();
+        int count = 0;
+        foreach (ItemData item in displayedItems)
+        {
+            if (item != null && item.Category == category)
+            {
+                count++;
+            }
+        }
+
+        return count < SlotCount;
+    }
+
+    public ItemData AddPurchasedItem(ItemData item)
+    {
+        InitializeOwnedItems();
+        return AddItem(item);
     }
 
     private void OnDisable()
@@ -114,8 +197,7 @@ public class InventoryPanel : TabContentPanel
             return;
         }
 
-        displayedItems.Add(item);
-        RenderCurrentTab();
+        AddItem(item);
     }
 
     private int GetVisibleItemCount()
@@ -469,6 +551,7 @@ public class InventoryPanel : TabContentPanel
         }
 
         SyncDisplayedItemsFromSlots();
+        SaveOwnership();
         dragCompleted = sourceSlot == dragSourceSlot;
     }
 
@@ -552,21 +635,79 @@ public class InventoryPanel : TabContentPanel
 
     public void SetOwnedItems(List<ItemData> items)
     {
-        ownedItems = items ?? new List<ItemData>();
+        hasInitializedOwnedItems = true;
+        ownedItems = new List<ItemData>();
+        if (items != null)
+        {
+            foreach (ItemData item in items)
+                if (item != null) ownedItems.Add(item.CreateOwnedInstance(item.EnhancementLevel, item.EnhancementAttempted));
+        }
         ResetDisplayedItems();
         RenderCurrentTab();
     }
 
-    public void AddItem(ItemData item)
+    public ItemData AddItem(ItemData item)
     {
-        if (item == null)
-        {
-            return;
-        }
+        if (item == null) return null;
 
+        InitializeOwnedItems();
+        item = item.CreateOwnedInstance(item.EnhancementLevel, item.EnhancementAttempted);
         ownedItems.Add(item);
         displayedItems.Add(item);
+        SaveOwnership();
         RenderCurrentTab();
+        return item;
+    }
+
+    public List<ItemData> GetSaleItems()
+    {
+        InitializeOwnedItems();
+        return new List<ItemData>(displayedItems);
+    }
+
+    public bool TryRemoveSaleItem(ItemData item)
+    {
+        InitializeOwnedItems();
+        if (item == null || !displayedItems.Remove(item)) return false;
+        SaveOwnership();
+        RenderCurrentTab();
+        return true;
+    }
+
+    public bool TryEnhanceItem(ItemData item, int successes)
+    {
+        InitializeOwnedItems();
+        if (item == null || !displayedItems.Contains(item) || !item.TryApplyEnhancement(successes)) return false;
+        SaveOwnership();
+        RenderCurrentTab();
+        return true;
+    }
+
+    private void SaveOwnership()
+    {
+        // 장착한 장비도 소유 목록에 포함하되 판매 목록에서는 제외합니다.
+        InitializeEquipmentSlots();
+        ownedItems.Clear();
+        ownedItems.AddRange(displayedItems);
+        foreach (InventorySlotUI slot in equipmentSlots)
+        {
+            if (slot != null && slot.CurrentItemData != null) ownedItems.Add(slot.CurrentItemData);
+        }
+        var records = new List<PlayerSaveManager.OwnedItemRecord>();
+        foreach (ItemData item in ownedItems)
+        {
+            if (item != null) records.Add(new PlayerSaveManager.OwnedItemRecord
+            {
+                itemId = item.name,
+                enhancementLevel = item.EnhancementLevel,
+                enhancementAttempted = item.EnhancementAttempted,
+                hasRolledOptions = true,
+                additionalStatBonuses = item.CopyAdditionalStatBonuses(),
+                additionalProbabilityBonuses = item.CopyAdditionalProbabilityBonuses(),
+                optionRulesVersion = 2
+            });
+        }
+        PlayerSaveManager.SaveOwnedItemRecords(records.ToArray());
     }
 
     private void ResetDisplayedItems()
