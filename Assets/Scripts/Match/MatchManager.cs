@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class MatchManager : MonoBehaviour
 {
+    [SerializeField] private bool startMatchOnStart = true;
     [SerializeField] private int targetScore = 11;
     [SerializeField] private string ballName = "volleyball";
     [SerializeField] private float autoServeDelay = 1.2f;
@@ -69,7 +70,7 @@ public class MatchManager : MonoBehaviour
 
     private void StartMatchIfNeeded()
     {
-        if (CurrentState == MatchState.None)
+        if (startMatchOnStart && CurrentState == MatchState.None)
         {
             StartMatch();
         }
@@ -212,6 +213,34 @@ public class MatchManager : MonoBehaviour
     public bool CanPlayRallyAction()
     {
         return CurrentState == MatchState.Rally;
+    }
+
+    public void PrepareForTextSimulation()
+    {
+        CancelInvoke(nameof(ResetRally));
+        CancelInvoke(nameof(AutoServeCurrentServer));
+        StopBall();
+        score.Reset(targetScore, TeamSide.Player);
+        matchEnd.Reset();
+        matchStats.Reset();
+        ChangeState(MatchState.Ready);
+    }
+
+    public void CompleteTextSimulation(int playerScore, int opponentScore, MatchStats simulatedStats)
+    {
+        if (CurrentState == MatchState.MatchOver)
+        {
+            return;
+        }
+
+        CancelInvoke(nameof(ResetRally));
+        CancelInvoke(nameof(AutoServeCurrentServer));
+        score.SetScores(playerScore, opponentScore);
+        matchStats.CopyFrom(simulatedStats);
+        matchStats.SetFinalScore(playerScore, opponentScore);
+        ChangeState(MatchState.MatchOver);
+        StopBall();
+        HandleMatchOver();
     }
 
 #if UNITY_EDITOR

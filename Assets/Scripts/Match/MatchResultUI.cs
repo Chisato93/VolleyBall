@@ -8,14 +8,8 @@ public class MatchResultUI : MonoBehaviour
 {
     private struct MatchRewardResult
     {
-        public bool IsWin;
         public bool HasWallet;
-        public int ResultScore;
-        public int ScorePointScore;
-        public int AttackSuccessScore;
-        public int AttackFailurePenalty;
         public int MatchEvaluationScore;
-        public int SeasonEvaluationScore;
         public int Allowance;
         public int CurrentMoney;
     }
@@ -31,6 +25,7 @@ public class MatchResultUI : MonoBehaviour
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button closeButton;
+    [SerializeField] private ScrollRect resultScrollRect;
 
     private bool hasShownResult;
 
@@ -42,11 +37,13 @@ public class MatchResultUI : MonoBehaviour
         }
 
         hasShownResult = true;
+        MatchRewardResult rewardResult = ApplyReward(matchManager);
+        MatchHistoryStore.SaveMatch(matchManager, rewardResult.MatchEvaluationScore,
+            rewardResult.HasWallet ? rewardResult.Allowance : 0);
         EnsureUi();
 
         if (resultText != null)
         {
-            MatchRewardResult rewardResult = ApplyReward(matchManager);
             resultText.text = BuildResultText(matchManager, rewardResult);
         }
 
@@ -54,97 +51,106 @@ public class MatchResultUI : MonoBehaviour
         {
             resultPanel.SetActive(true);
         }
+
+        if (resultScrollRect != null)
+        {
+            Canvas.ForceUpdateCanvases();
+            resultScrollRect.StopMovement();
+            resultScrollRect.verticalNormalizedPosition = 1f;
+        }
     }
 
     private void EnsureUi()
     {
+        TryFindSceneUi();
+
         if (resultPanel != null && resultText != null && closeButton != null)
         {
+            closeButton.onClick.RemoveListener(ReturnToMainScene);
+            closeButton.onClick.AddListener(ReturnToMainScene);
             return;
         }
 
-        Canvas canvas = FindFirstObjectByType<Canvas>();
-        if (canvas == null)
-        {
-            GameObject canvasObject = new GameObject("MatchResultCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvas = canvasObject.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-            CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-        }
-
-        resultPanel = new GameObject("MatchResultPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        resultPanel.transform.SetParent(canvas.transform, false);
-
-        RectTransform panelTransform = resultPanel.GetComponent<RectTransform>();
-        panelTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        panelTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        panelTransform.anchoredPosition = Vector2.zero;
-        panelTransform.sizeDelta = new Vector2(680f, 620f);
-
-        Image panelImage = resultPanel.GetComponent<Image>();
-        panelImage.color = new Color(0.08f, 0.1f, 0.12f, 0.94f);
-
-        GameObject textObject = new GameObject("MatchResultText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(resultPanel.transform, false);
-
-        RectTransform textTransform = textObject.GetComponent<RectTransform>();
-        textTransform.anchorMin = Vector2.zero;
-        textTransform.anchorMax = Vector2.one;
-        textTransform.offsetMin = new Vector2(32f, 116f);
-        textTransform.offsetMax = new Vector2(-32f, -32f);
-
-        resultText = textObject.GetComponent<TMP_Text>();
-        resultText.color = Color.white;
-        resultText.fontSize = 24f;
-        resultText.enableAutoSizing = true;
-        resultText.fontSizeMin = 14f;
-        resultText.fontSizeMax = 26f;
-        resultText.alignment = TextAlignmentOptions.TopLeft;
-
-        closeButton = CreateCloseButton(resultPanel.transform);
-        closeButton.onClick.AddListener(ReturnToMainScene);
-        resultPanel.SetActive(false);
+        Debug.LogWarning("MatchResultUI가 씬에 미리 배치된 결과 UI를 찾지 못했습니다. MatchResultPanel, MatchResultText, ReturnToMainButton을 확인하세요.");
     }
 
-    private Button CreateCloseButton(Transform parent)
+    private void TryFindSceneUi()
     {
-        GameObject buttonObject = new GameObject("ReturnToMainButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-        buttonObject.transform.SetParent(parent, false);
+        if (resultPanel == null)
+        {
+            Transform panelTransform = FindChildTransform(transform, "MatchResultPanel");
+            if (panelTransform == null)
+            {
+                panelTransform = FindSceneTransform("MatchResultPanel");
+            }
 
-        RectTransform buttonTransform = buttonObject.GetComponent<RectTransform>();
-        buttonTransform.anchorMin = new Vector2(0.5f, 0f);
-        buttonTransform.anchorMax = new Vector2(0.5f, 0f);
-        buttonTransform.anchoredPosition = new Vector2(0f, 48f);
-        buttonTransform.sizeDelta = new Vector2(240f, 64f);
+            resultPanel = panelTransform != null ? panelTransform.gameObject : null;
+        }
 
-        Image buttonImage = buttonObject.GetComponent<Image>();
-        buttonImage.color = new Color(0.9f, 0.92f, 0.95f, 1f);
+        if (resultText == null && resultPanel != null)
+        {
+            resultText = FindChildComponent<TMP_Text>(resultPanel.transform, "MatchResultText");
+        }
 
-        GameObject textObject = new GameObject("Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(buttonObject.transform, false);
+        if (closeButton == null && resultPanel != null)
+        {
+            closeButton = FindChildComponent<Button>(resultPanel.transform, "ReturnToMainButton");
+        }
 
-        RectTransform textTransform = textObject.GetComponent<RectTransform>();
-        textTransform.anchorMin = Vector2.zero;
-        textTransform.anchorMax = Vector2.one;
-        textTransform.offsetMin = Vector2.zero;
-        textTransform.offsetMax = Vector2.zero;
+        if (resultScrollRect == null && resultPanel != null)
+        {
+            resultScrollRect = FindChildComponent<ScrollRect>(resultPanel.transform, "ResultScrollView");
+        }
+    }
 
-        TMP_Text buttonText = textObject.GetComponent<TMP_Text>();
-        buttonText.text = "마을로";
-        buttonText.color = Color.black;
-        buttonText.fontSize = 28f;
-        buttonText.alignment = TextAlignmentOptions.Center;
+    private static Transform FindSceneTransform(string objectName)
+    {
+        GameObject foundObject = GameObject.Find(objectName);
+        return foundObject != null ? foundObject.transform : null;
+    }
 
-        return buttonObject.GetComponent<Button>();
+    private static Transform FindChildTransform(Transform root, string objectName)
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        Transform[] transforms = root.GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in transforms)
+        {
+            if (child.name == objectName)
+            {
+                return child;
+            }
+        }
+
+        return null;
+    }
+
+    private static T FindChildComponent<T>(Transform root, string objectName) where T : Component
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        T[] components = root.GetComponentsInChildren<T>(true);
+        foreach (T component in components)
+        {
+            if (component.name == objectName)
+            {
+                return component;
+            }
+        }
+
+        return null;
     }
 
     private MatchRewardResult ApplyReward(MatchManager matchManager)
     {
         MatchRewardResult rewardResult = CalculateReward(matchManager);
-        rewardResult.SeasonEvaluationScore = PlayerSaveManager.AddSeasonCoachEvaluationScore(rewardResult.MatchEvaluationScore);
+        PlayerSaveManager.AddSeasonCoachEvaluationScore(rewardResult.MatchEvaluationScore);
 
         WalletManager walletManager = WalletManager.Instance != null ? WalletManager.Instance : FindFirstObjectByType<WalletManager>();
         if (walletManager != null)
@@ -191,19 +197,14 @@ public class MatchResultUI : MonoBehaviour
 
         return new MatchRewardResult
         {
-            IsWin = isWin,
-            ResultScore = resultScore,
-            ScorePointScore = scorePointScore,
-            AttackSuccessScore = attackSuccessScore,
-            AttackFailurePenalty = attackFailurePenalty,
-            MatchEvaluationScore = Mathf.Max(0, resultScore + scorePointScore + attackSuccessScore - attackFailurePenalty),
+            MatchEvaluationScore = stats?.CommentaryEvaluationScore
+                ?? Mathf.Max(0, resultScore + scorePointScore + attackSuccessScore - attackFailurePenalty),
             Allowance = isWin ? WinAllowance : LoseAllowance
         };
     }
 
     private static string BuildResultText(MatchManager matchManager, MatchRewardResult rewardResult)
     {
-        MatchStats stats = matchManager != null ? matchManager.CurrentMatchStats : null;
         int playerScore = matchManager != null ? matchManager.PlayerScore : 0;
         int opponentScore = matchManager != null ? matchManager.OpponentScore : 0;
 
@@ -212,41 +213,13 @@ public class MatchResultUI : MonoBehaviour
         builder.AppendLine($"점수: Player {playerScore} - {opponentScore} Opponent");
         builder.AppendLine();
         AppendRewardText(builder, rewardResult);
-        builder.AppendLine();
-        builder.AppendLine("선수별 기록");
-
-        if (stats == null || stats.PlayerStats.Count == 0)
-        {
-            builder.AppendLine("기록된 선수 행동이 없습니다.");
-            return builder.ToString();
-        }
-
-        foreach (PlayerMatchStats playerStats in stats.PlayerStats)
-        {
-            builder.AppendLine($"{playerStats.PlayerName} ({playerStats.TeamSide})");
-            builder.AppendLine($"서브 {playerStats.Serves} / 리시브 {playerStats.Receives} / 토스 {playerStats.Sets} / 스파이크 {playerStats.Spikes}");
-            builder.AppendLine($"블록 {playerStats.Blocks} / 득점 {playerStats.Points} / 공격성공 {playerStats.AttackSuccesses} / 공격실패 {playerStats.AttackFailures}");
-            builder.AppendLine();
-        }
 
         return builder.ToString();
     }
 
     private static void AppendRewardText(StringBuilder builder, MatchRewardResult rewardResult)
     {
-        builder.AppendLine("감독 평가");
-        builder.AppendLine($"{(rewardResult.IsWin ? "승리" : "패배")} +{rewardResult.ResultScore}");
-        builder.AppendLine($"득점 기여 +{rewardResult.ScorePointScore}");
-        builder.AppendLine($"공격 성공 +{rewardResult.AttackSuccessScore}");
-
-        if (rewardResult.AttackFailurePenalty > 0)
-        {
-            builder.AppendLine($"공격 실패 -{rewardResult.AttackFailurePenalty}");
-        }
-
-        builder.AppendLine();
-        builder.AppendLine($"이번 경기 평가점: {rewardResult.MatchEvaluationScore}");
-        builder.AppendLine($"시즌 누적 평가점: {rewardResult.SeasonEvaluationScore}");
+        builder.AppendLine($"이번 경기 평가점: {rewardResult.MatchEvaluationScore}점");
         builder.AppendLine();
         builder.AppendLine("출전 수당");
         builder.AppendLine($"이번 경기 수당: {rewardResult.Allowance:N0}원");

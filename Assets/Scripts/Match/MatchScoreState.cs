@@ -36,4 +36,10 @@ internal sealed class MatchScoreState
     {
         PlayerScore = playerScore;
     }
+
+    public void SetScores(int playerScore, int opponentScore)
+    {
+        PlayerScore = playerScore;
+        OpponentScore = opponentScore;
+    }
 }
