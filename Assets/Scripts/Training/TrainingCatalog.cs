@@ -13,8 +13,7 @@ public static class TrainingCatalog
         new TrainingDefinition("서브 훈련", PlayerStatType.Serve),
         new TrainingDefinition("스피드 훈련", PlayerStatType.Speed),
         new TrainingDefinition("체력 훈련", PlayerStatType.Stamina),
-        new TrainingDefinition("멘탈 훈련", PlayerStatType.Mental),
-        new TrainingDefinition("종합 훈련")
+        new TrainingDefinition("멘탈 훈련", PlayerStatType.Mental)
     };
 
     private static readonly PlayerStatType[] AllStatTypes =
@@ -29,6 +28,23 @@ public static class TrainingCatalog
         PlayerStatType.Stamina,
         PlayerStatType.Mental
     };
+
+    public static string GetStatName(PlayerStatType statType)
+    {
+        switch (statType)
+        {
+            case PlayerStatType.Power: return "파워";
+            case PlayerStatType.Jump: return "점프";
+            case PlayerStatType.Receive: return "리시브";
+            case PlayerStatType.Set: return "토스";
+            case PlayerStatType.Block: return "블록";
+            case PlayerStatType.Serve: return "서브";
+            case PlayerStatType.Speed: return "스피드";
+            case PlayerStatType.Stamina: return "체력";
+            case PlayerStatType.Mental: return "멘탈";
+            default: return statType.ToString();
+        }
+    }
 
     public static List<TrainingDefinition> GetAllTrainings()
     {

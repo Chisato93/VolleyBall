@@ -3,6 +3,7 @@ public struct TrainingResult
     public string TrainingName;
     public PlayerStatType StatType;
     public int Increase;
+    public int EnergySpent;
     public int BeforeValue;
     public int AfterValue;
     public int RemainingActionPoints;

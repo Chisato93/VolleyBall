@@ -8,6 +8,12 @@ public static class TrainingService
     private const int StartingStatValue = 20;
     private const string CareerPlayerSaveId = "Player Outside Hitter";
 
+    public static bool CanTrain(TrainingDefinition training)
+    {
+        return training != null && !training.UsesRandomStat
+            && LoadCareerPlayerStats().GetValue(training.StatType) < MaxStatValue;
+    }
+
     public static TrainingResult ApplyTraining(TrainingDefinition training)
     {
         if (training == null)

@@ -8,7 +8,6 @@ public class TrainingDefinition
     {
         Name = name;
         StatType = statType;
-        UsesRandomStat = false;
     }
 
     public TrainingDefinition(string name)
@@ -18,23 +17,19 @@ public class TrainingDefinition
         UsesRandomStat = true;
     }
 
-    public string GetDetailText()
-    {
-        return "선택하면 행동력을 1 사용합니다.";
-    }
+    public string GetDetailText() => "훈련하면 해당 능력치가 증가합니다.";
+    public string GetEffectText() => UsesRandomStat ? "랜덤 능력치 +1~3"
+        : $"{TrainingCatalog.GetStatName(StatType)} +1~3";
+}
 
-    public string GetEffectText()
-    {
-        if (UsesRandomStat)
-        {
-            return "랜덤 능력치 +1~3";
-        }
+public class TrainingOffer
+{
+    public TrainingDefinition Training { get; }
+    public int EnergyCost { get; }
 
-        return $"{StatType} +1~3";
-    }
-
-    public string GetTimeText()
+    public TrainingOffer(TrainingDefinition training, int energyCost)
     {
-        return "1회";
+        Training = training;
+        EnergyCost = energyCost;
     }
 }

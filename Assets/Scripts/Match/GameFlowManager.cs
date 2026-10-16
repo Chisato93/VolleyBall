@@ -139,7 +139,7 @@ public class GameFlowManager : MonoBehaviour
             int month = careerCalendarManager != null ? careerCalendarManager.CurrentMonth : 11;
             int evaluationScore = PlayerSaveManager.LoadSeasonCoachEvaluationScore();
 
-            actionPointText.text = $"마을\n행동력: {remainingActionPoints} / {maxActionPoints}\n돈: {money:N0}원\n날짜: {year}년 {month}월\n감독 평가점: {evaluationScore}";
+            actionPointText.text = $"마을\n에너지: {remainingActionPoints} / {maxActionPoints}\n돈: {money:N0}원\n날짜: {year}년 {month}월\n감독 평가점: {evaluationScore}";
         }
 
         if (trainingActionButton != null)
@@ -191,6 +191,14 @@ public class GameFlowManager : MonoBehaviour
         RestResult result = ApplyRestAction();
         ConsumeActionPoint();
         ShowActionResult(result);
+    }
+
+    public bool TryConsumeActionPoints(int amount)
+    {
+        if (amount <= 0 || remainingActionPoints < amount) return false;
+        remainingActionPoints -= amount;
+        UpdateMainPanel();
+        return true;
     }
 
     public int ConsumeActionPoint()
@@ -338,7 +346,7 @@ public class GameFlowManager : MonoBehaviour
             return;
         }
 
-        resultText.text = $"휴식 완료!\n체력 +{result.StaminaAfter - result.StaminaBefore} ({result.StaminaBefore} -> {result.StaminaAfter})\n멘탈 +{result.MentalAfter - result.MentalBefore} ({result.MentalBefore} -> {result.MentalAfter})\n남은 행동력: {remainingActionPoints} / {maxActionPoints}";
+        resultText.text = $"휴식 완료!\n체력 +{result.StaminaAfter - result.StaminaBefore} ({result.StaminaBefore} -> {result.StaminaAfter})\n멘탈 +{result.MentalAfter - result.MentalBefore} ({result.MentalBefore} -> {result.MentalAfter})\n남은 에너지: {remainingActionPoints} / {maxActionPoints}";
     }
 
     public void HandleResultClose()

@@ -1,6 +1,6 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class TrainingCard : MonoBehaviour
@@ -9,44 +9,28 @@ public class TrainingCard : MonoBehaviour
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text detailText;
     [SerializeField] private TMP_Text effectText;
-    [SerializeField] private TMP_Text timeText;
+    [FormerlySerializedAs("timeText")]
+    [SerializeField] private TMP_Text energyText;
     [SerializeField] private Button trainingBtn;
+    [SerializeField] private TrainingPanel ownerPanel;
+    [SerializeField] private int optionIndex;
 
-    public void SetData(Sprite icon, string title, string detail, string effect, string time, UnityAction onClick)
+    public void SetData(TrainingOffer offer, bool canTrain, string unavailableReason)
     {
-        if (iconImage != null && icon != null)
-        {
-            iconImage.sprite = icon;
-        }
+        titleText.text = offer.Training.Name;
+        detailText.text = string.IsNullOrEmpty(unavailableReason) ? offer.Training.GetDetailText() : unavailableReason;
+        effectText.text = offer.Training.GetEffectText();
+        energyText.text = $"소요 에너지: {offer.EnergyCost}";
+        trainingBtn.interactable = canTrain;
+    }
 
-        if (titleText != null)
-        {
-            titleText.text = title;
-        }
+    public void SetInteractable(bool value)
+    {
+        trainingBtn.interactable = value;
+    }
 
-        if (detailText != null)
-        {
-            detailText.text = detail;
-        }
-
-        if (effectText != null)
-        {
-            effectText.text = effect;
-        }
-
-        if (timeText != null)
-        {
-            timeText.text = time;
-        }
-
-        if (trainingBtn != null)
-        {
-            trainingBtn.onClick.RemoveAllListeners();
-
-            if (onClick != null)
-            {
-                trainingBtn.onClick.AddListener(onClick);
-            }
-        }
+    public void Select()
+    {
+        if (ownerPanel != null) ownerPanel.SelectTraining(optionIndex);
     }
 }
