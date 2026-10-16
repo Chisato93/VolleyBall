@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class GameFlowStateManager
 {
-    private const int MaxStatValue = 99;
+    private const int MaxStatValue = PlayerStats.MaxValue;
     private const int StartingStatValue = 20;
     private const int StartingBonusPoints = 10;
     private const int InitialStatCap = 30;
@@ -28,6 +28,7 @@ public static class GameFlowStateManager
     {
         PlayerStats startingStats = BuildNewCareerStartingStats(selectedPosition, allocatedStats);
         ResetCareerSaveData(selectedPosition, startingStats);
+        PlayerSaveManager.SaveCheckpoint();
     }
 
     private static PlayerStats BuildNewCareerStartingStats(POSITION selectedPosition, PlayerStats allocatedStats)
@@ -109,9 +110,12 @@ public static class GameFlowStateManager
     private static void ResetCareerSaveData(POSITION selectedPosition, PlayerStats startingStats)
     {
         PlayerSaveManager.ResetMoneySave(StartingMoney);
+        if (WalletManager.Instance != null) WalletManager.Instance.SetMoney(StartingMoney);
         PlayerSaveManager.ResetCareerSave(StartingYear, StartingMonth);
+        if (CareerCalendarManager.Instance != null) CareerCalendarManager.Instance.ResetCareerCalendar();
         PlayerSaveManager.ResetSeasonCoachEvaluationScore();
         PlayerSaveManager.ResetPurchasedItems();
+        PlayerSaveManager.ResetEnergy();
         MatchHistoryStore.Clear();
         PlayerSaveManager.SaveSelectedPosition(selectedPosition);
 

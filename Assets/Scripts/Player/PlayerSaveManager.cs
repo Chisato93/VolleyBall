@@ -2,6 +2,8 @@ using UnityEngine;
 
 public static class PlayerSaveManager
 {
+    public static int StateVersion { get; private set; }
+
     [System.Serializable]
     private class PurchasedItemsData
     {
@@ -48,6 +50,7 @@ public static class PlayerSaveManager
     public class OwnedItemRecord
     {
         public string itemId;
+        public bool isEquipped;
         public int enhancementLevel;
         public bool enhancementAttempted;
         public bool hasRolledOptions;
@@ -75,6 +78,7 @@ public static class PlayerSaveManager
     {
         PlayerPrefs.SetString(OwnedItemRecordsKey, JsonUtility.ToJson(new OwnedItemRecords { items = items }));
         PlayerPrefs.Save();
+        StateVersion++;
     }
 
     public static void ResetPurchasedItems()
@@ -82,6 +86,47 @@ public static class PlayerSaveManager
         PlayerPrefs.DeleteKey(PurchasedItemsPrefsKey);
         PlayerPrefs.DeleteKey(OwnedItemsPrefsKey);
         PlayerPrefs.DeleteKey(OwnedItemRecordsKey);
+        PlayerPrefs.Save();
+        StateVersion++;
+    }
+
+    [System.Serializable]
+    private class EnergyData
+    {
+        public int year;
+        public int month;
+        public int remaining;
+    }
+
+    private const string EnergyPrefsKey = "PlayerRemainingEnergy";
+
+    public static int LoadEnergy(int maximum, int year, int month)
+    {
+        string json = PlayerPrefs.GetString(EnergyPrefsKey, string.Empty);
+        if (string.IsNullOrEmpty(json)) return Mathf.Max(0, maximum);
+        EnergyData data = JsonUtility.FromJson<EnergyData>(json);
+        if (data == null || data.year != year || data.month != month) return Mathf.Max(0, maximum);
+        return Mathf.Clamp(data.remaining, 0, Mathf.Max(0, maximum));
+    }
+
+    public static void SaveEnergy(int remaining, int year, int month)
+    {
+        PlayerPrefs.SetString(EnergyPrefsKey, JsonUtility.ToJson(new EnergyData
+        {
+            year = year, month = month, remaining = Mathf.Max(0, remaining)
+        }));
+        PlayerPrefs.Save();
+    }
+
+    public static void ResetEnergy()
+    {
+        PlayerPrefs.DeleteKey(EnergyPrefsKey);
+        PlayerPrefs.Save();
+    }
+
+    public static void SaveCheckpoint()
+    {
+        // 각 기능이 갱신한 능력치·보유 돈·장비·경기 기록을 디스크에 확정합니다.
         PlayerPrefs.Save();
     }
 
@@ -206,6 +251,7 @@ public static class PlayerSaveManager
         SaveStat(playerData, PlayerStatType.Stamina, stats.Stamina);
         SaveStat(playerData, PlayerStatType.Mental, stats.Mental);
         PlayerPrefs.Save();
+        StateVersion++;
     }
 
     public static void SavePlayerStats(string playerSaveId, PlayerStats stats)
@@ -225,6 +271,7 @@ public static class PlayerSaveManager
         SaveStat(playerSaveId, PlayerStatType.Stamina, stats.Stamina);
         SaveStat(playerSaveId, PlayerStatType.Mental, stats.Mental);
         PlayerPrefs.Save();
+        StateVersion++;
     }
 
     public static void ResetCareerSave(int startingYear, int startingMonth)
@@ -265,6 +312,7 @@ public static class PlayerSaveManager
         DeleteStat(playerData, PlayerStatType.Stamina);
         DeleteStat(playerData, PlayerStatType.Mental);
         PlayerPrefs.Save();
+        StateVersion++;
     }
 
     private static int LoadStat(PlayerData playerData, PlayerStatType statType, int defaultValue)

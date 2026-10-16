@@ -40,6 +40,7 @@ public class MatchResultUI : MonoBehaviour
         MatchRewardResult rewardResult = ApplyReward(matchManager);
         MatchHistoryStore.SaveMatch(matchManager, rewardResult.MatchEvaluationScore,
             rewardResult.HasWallet ? rewardResult.Allowance : 0);
+        PlayerSaveManager.SaveCheckpoint();
         EnsureUi();
 
         if (resultText != null)
@@ -230,6 +231,7 @@ public class MatchResultUI : MonoBehaviour
 
     private static void ReturnToMainScene()
     {
+        PlayerSaveManager.SaveCheckpoint();
         if (SceneLoadManager.Instance != null)
         {
             SceneLoadManager.Instance.LoadScene(SceneEnums.MainScene);

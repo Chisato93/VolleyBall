@@ -62,6 +62,8 @@ public class InventoryPanel : TabContentPanel
         }
 
         hasInitializedOwnedItems = true;
+        InitializeEquipmentSlots();
+        var restoredEquipment = new Dictionary<ItemData, bool>();
         PlayerSaveManager.OwnedItemRecord[] records = PlayerSaveManager.LoadOwnedItemRecords();
         if (records != null)
         {
@@ -82,6 +84,7 @@ public class InventoryPanel : TabContentPanel
                         }
                     }
                     ownedItems.Add(instance);
+                    restoredEquipment[instance] = record.isEquipped;
                 }
             }
         }
@@ -101,6 +104,17 @@ public class InventoryPanel : TabContentPanel
         }
 
         ResetDisplayedItems();
+        foreach (KeyValuePair<ItemData, bool> entry in restoredEquipment)
+        {
+            if (!entry.Value) continue;
+            foreach (InventorySlotUI slot in equipmentSlots)
+            {
+                if (slot.HasItem || !slot.CanAccept(entry.Key)) continue;
+                slot.SetItem(entry.Key, itemPrefab);
+                displayedItems.Remove(entry.Key);
+                break;
+            }
+        }
         SaveOwnership();
     }
 
@@ -552,6 +566,7 @@ public class InventoryPanel : TabContentPanel
 
         SyncDisplayedItemsFromSlots();
         SaveOwnership();
+        PlayerSaveManager.SaveCheckpoint();
         dragCompleted = sourceSlot == dragSourceSlot;
     }
 
@@ -683,9 +698,15 @@ public class InventoryPanel : TabContentPanel
         return true;
     }
 
+    public void SaveCurrentState()
+    {
+        InitializeOwnedItems();
+        SaveOwnership();
+    }
+
     private void SaveOwnership()
     {
-        // 장착한 장비도 소유 목록에 포함하되 판매 목록에서는 제외합니다.
+        // 장착 위치를 함께 저장하고, 가방과 장비를 별도로 복원합니다.
         InitializeEquipmentSlots();
         ownedItems.Clear();
         ownedItems.AddRange(displayedItems);
@@ -699,6 +720,7 @@ public class InventoryPanel : TabContentPanel
             if (item != null) records.Add(new PlayerSaveManager.OwnedItemRecord
             {
                 itemId = item.name,
+                isEquipped = equipmentSlots.Exists(slot => slot != null && slot.CurrentItemData == item),
                 enhancementLevel = item.EnhancementLevel,
                 enhancementAttempted = item.EnhancementAttempted,
                 hasRolledOptions = true,

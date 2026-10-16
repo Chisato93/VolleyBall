@@ -1,6 +1,8 @@
 [System.Serializable]
 public class PlayerStats
 {
+    public const int MaxValue = 299;
+
     public int Power;
     public int Jump;
     public int Receive;

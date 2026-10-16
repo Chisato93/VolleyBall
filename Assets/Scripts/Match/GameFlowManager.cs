@@ -9,7 +9,7 @@ public class GameFlowManager : MonoBehaviour
 {
     private const int MinRestIncrease = 1;
     private const int MaxRestIncreaseExclusive = 4;
-    private const int MaxStatValue = 99;
+    private const int MaxStatValue = PlayerStats.MaxValue;
     private const int StartingStatValue = 20;
     private const string CareerPlayerSaveId = "Player Outside Hitter";
 
@@ -64,6 +64,7 @@ public class GameFlowManager : MonoBehaviour
 
     public void CompleteTrainingAction()
     {
+        SaveCurrentProgress();
         PlayQuickFade(CompleteAction);
     }
 
@@ -80,8 +81,18 @@ public class GameFlowManager : MonoBehaviour
 
     private void StartMainPhase()
     {
-        remainingActionPoints = Mathf.Max(0, maxActionPoints);
+        remainingActionPoints = PlayerSaveManager.LoadEnergy(maxActionPoints,
+            PlayerSaveManager.LoadCareerYear(1), PlayerSaveManager.LoadCareerMonth(11));
+        SaveCurrentProgress();
         ShowMainPanel();
+    }
+
+    private void SaveCurrentProgress()
+    {
+        PlayerSaveManager.SaveEnergy(remainingActionPoints,
+            PlayerSaveManager.LoadCareerYear(1), PlayerSaveManager.LoadCareerMonth(11));
+        if (InventoryPanel.ActivePanel != null) InventoryPanel.ActivePanel.SaveCurrentState();
+        PlayerSaveManager.SaveCheckpoint();
     }
 
     private void ShowMainPanel()
@@ -197,6 +208,7 @@ public class GameFlowManager : MonoBehaviour
     {
         if (amount <= 0 || remainingActionPoints < amount) return false;
         remainingActionPoints -= amount;
+        SaveCurrentProgress();
         UpdateMainPanel();
         return true;
     }
@@ -208,6 +220,7 @@ public class GameFlowManager : MonoBehaviour
             remainingActionPoints--;
         }
 
+        SaveCurrentProgress();
         UpdateMainPanel();
         return remainingActionPoints;
     }
@@ -299,6 +312,7 @@ public class GameFlowManager : MonoBehaviour
 
     private void LoadMatchScene()
     {
+        SaveCurrentProgress();
         if (SceneLoadManager.Instance != null)
         {
             SceneLoadManager.Instance.LoadScene(SceneEnums.MatchScene);
@@ -329,10 +343,7 @@ public class GameFlowManager : MonoBehaviour
         builder.AppendLine($"이름: {CareerPlayerSaveId}");
         builder.AppendLine($"포지션: {selectedPosition}");
         builder.AppendLine();
-        builder.AppendLine("능력치");
-        builder.AppendLine($"파워 {stats.Power} / 점프 {stats.Jump} / 리시브 {stats.Receive}");
-        builder.AppendLine($"토스 {stats.Set} / 블록 {stats.Block} / 서브 {stats.Serve}");
-        builder.AppendLine($"스피드 {stats.Speed} / 체력 {stats.Stamina} / 멘탈 {stats.Mental}");
+        builder.AppendLine(EquipmentStatsService.BuildStatsText(stats));
         return builder.ToString();
     }
 
@@ -356,6 +367,7 @@ public class GameFlowManager : MonoBehaviour
 
     private void HandleResultCloseNow()
     {
+        SaveCurrentProgress();
         SetResultPanelActive(false);
 
         switch (resultCloseAction)

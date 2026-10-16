@@ -70,7 +70,7 @@ public class TrainingPanel : MonoBehaviour
             if (!hasOffer) continue;
             TrainingOffer offer = offers[i];
             bool atMaximum = !TrainingService.CanTrain(offer.Training);
-            string reason = atMaximum ? "능력치가 최대치(99)입니다."
+            string reason = atMaximum ? $"능력치가 최대치({PlayerStats.MaxValue})입니다."
                 : remaining < offer.EnergyCost ? "에너지가 부족합니다." : string.Empty;
             trainingCards[i].SetData(offer, !isTraining && gameFlowManager != null && string.IsNullOrEmpty(reason), reason);
         }
@@ -105,6 +105,7 @@ public class TrainingPanel : MonoBehaviour
         result.RemainingActionPoints = gameFlowManager.RemainingActionPoints;
         result.MaxActionPoints = gameFlowManager.MaxActionPoints;
         offers.Clear();
+        PlayerSaveManager.SaveCheckpoint();
         isTraining = false;
         returnHomeButton.interactable = true;
         foreach (TrainingCard card in trainingCards) card.gameObject.SetActive(false);

@@ -4,7 +4,7 @@ public static class TrainingService
 {
     private const int MinTrainingIncrease = 1;
     private const int MaxTrainingIncreaseExclusive = 4;
-    private const int MaxStatValue = 99;
+    private const int MaxStatValue = PlayerStats.MaxValue;
     private const int StartingStatValue = 20;
     private const string CareerPlayerSaveId = "Player Outside Hitter";
 
@@ -37,7 +37,7 @@ public static class TrainingService
         return TrainingResult.Succeeded(training.Name, statType, actualIncrease, beforeValue, afterValue);
     }
 
-    private static PlayerStats LoadCareerPlayerStats()
+    public static PlayerStats LoadCareerPlayerStats()
     {
         PlayerStats stats = CreateDefaultCareerPlayerStats();
         PlayerSaveManager.LoadPlayerStats(CareerPlayerSaveId, stats);

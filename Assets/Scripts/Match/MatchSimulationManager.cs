@@ -210,7 +210,7 @@ public class MatchSimulationManager : MonoBehaviour
         simulatedStats.RecordNamedTouch(server.Name, servingTeam, BallTouchAction.Serve);
         EnqueuePendingLine(Format("Serve", "Start", servingTeam, server, null));
 
-        if (!RollAction(server, null, PlayerStatType.Serve, PlayerStatType.Mental, 0.72f))
+        if (!RollAction(server, null, PlayerStatType.Serve, PlayerStatType.Mental, 0.72f, ItemProbabilityType.ServeSuccess))
         {
             EnqueuePendingLine(Format("Serve", "Fail", servingTeam, server, null));
             AwardPoint(receivingTeam, null);
@@ -220,7 +220,7 @@ public class MatchSimulationManager : MonoBehaviour
         simulatedStats.RecordNamedTouch(receiver.Name, receivingTeam, BallTouchAction.Receive);
         EnqueuePendingLine(Format("Receive", "Start", receivingTeam, receiver, server));
 
-        if (!RollAction(receiver, server, PlayerStatType.Receive, PlayerStatType.Speed, 0.68f))
+        if (!RollAction(receiver, server, PlayerStatType.Receive, PlayerStatType.Speed, 0.68f, ItemProbabilityType.ReceiveSuccess))
         {
             EnqueuePendingLine(Format("Receive", "Fail", receivingTeam, receiver, server));
             AwardPoint(servingTeam, server);
@@ -230,7 +230,7 @@ public class MatchSimulationManager : MonoBehaviour
         simulatedStats.RecordNamedTouch(setter.Name, receivingTeam, BallTouchAction.Set);
         EnqueuePendingLine(Format("Toss", "Start", receivingTeam, setter, null));
 
-        if (!RollAction(setter, null, PlayerStatType.Set, PlayerStatType.Mental, 0.78f))
+        if (!RollAction(setter, null, PlayerStatType.Set, PlayerStatType.Mental, 0.78f, ItemProbabilityType.TossSuccess))
         {
             EnqueuePendingLine(Format("Toss", "Fail", receivingTeam, setter, null));
             AwardPoint(servingTeam, null);
@@ -240,7 +240,7 @@ public class MatchSimulationManager : MonoBehaviour
         simulatedStats.RecordNamedTouch(attacker.Name, receivingTeam, BallTouchAction.Spike);
         EnqueuePendingLine(Format("Attack", "Start", receivingTeam, attacker, blocker));
 
-        bool blockSuccess = RollAction(blocker, attacker, PlayerStatType.Block, PlayerStatType.Jump, 0.28f);
+        bool blockSuccess = RollAction(blocker, attacker, PlayerStatType.Block, PlayerStatType.Jump, 0.28f, ItemProbabilityType.BlockSuccess);
         if (blockSuccess)
         {
             simulatedStats.RecordNamedTouch(blocker.Name, servingTeam, BallTouchAction.Block);
@@ -250,7 +250,7 @@ public class MatchSimulationManager : MonoBehaviour
             return;
         }
 
-        bool attackSuccess = RollAction(attacker, blocker, PlayerStatType.Power, PlayerStatType.Jump, 0.64f);
+        bool attackSuccess = RollAction(attacker, blocker, PlayerStatType.Power, PlayerStatType.Jump, 0.64f, ItemProbabilityType.AttackSuccess);
         simulatedStats.RecordNamedAttackResult(attacker.Name, receivingTeam, attackSuccess);
 
         if (attackSuccess)
@@ -340,11 +340,13 @@ public class MatchSimulationManager : MonoBehaviour
         pendingLines.Enqueue(line);
     }
 
-    private bool RollAction(SimPlayer actor, SimPlayer opponent, PlayerStatType primaryStat, PlayerStatType secondaryStat, float baseChance)
+    private bool RollAction(SimPlayer actor, SimPlayer opponent, PlayerStatType primaryStat, PlayerStatType secondaryStat, float baseChance, ItemProbabilityType effectType)
     {
         float actorValue = GetAverageStat(actor, primaryStat, secondaryStat);
         float opponentValue = opponent != null ? GetAverageStat(opponent, primaryStat, secondaryStat) : DefaultStatValue;
         float chance = Mathf.Clamp(baseChance + (actorValue - opponentValue) * 0.01f, 0.18f, 0.92f);
+        if (actor != null && actor.IsCareerPlayer)
+            chance = EquipmentStatsService.ApplyProbabilityBonus(chance, effectType);
         return UnityEngine.Random.value <= chance;
     }
 
@@ -586,6 +588,7 @@ public class MatchSimulationManager : MonoBehaviour
         public readonly TeamSide TeamSide;
         public readonly POSITION Position;
         public readonly PlayerStats Stats;
+        public readonly bool IsCareerPlayer;
 
         public SimPlayer(CharacterRole role)
         {
@@ -595,6 +598,7 @@ public class MatchSimulationManager : MonoBehaviour
                 ? role.PlayerData.PlayerName
                 : role.name;
             Stats = role.Stats;
+            IsCareerPlayer = role.IsCareerPlayer;
         }
 
         public SimPlayer(TeamSide teamSide, string name, POSITION position)

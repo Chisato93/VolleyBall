@@ -153,6 +153,7 @@ public class ShopUpgradePanel : MonoBehaviour
         // 결과와 재강화 금지를 먼저 저장합니다. 스킵·창 닫기로 다시 뽑을 수 없습니다.
         messageText.text = "강화 완료! 이 아이템은 다시 강화할 수 없습니다.";
         revealPanel.Open(selected, results);
+        PlayerSaveManager.SaveCheckpoint();
         Refresh();
     }
 }

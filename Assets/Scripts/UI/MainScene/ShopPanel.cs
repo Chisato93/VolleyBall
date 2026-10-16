@@ -269,6 +269,7 @@ public class ShopPanel : MonoBehaviour
         }
         else reward = candidates[0];
         reward = inventoryPanel.AddPurchasedItem(reward);
+        PlayerSaveManager.SaveCheckpoint();
         messageText.text = selectedProduct.isRandom ? "랜덤 아이템 구매 완료!" : $"{reward.ItemName} 구매 완료!";
         RefreshMoney();
         if (selectedProduct.isRandom)

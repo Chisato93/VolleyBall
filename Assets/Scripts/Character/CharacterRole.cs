@@ -10,14 +10,43 @@ public class CharacterRole : MonoBehaviour
     private PlayerStats defaultStats;
     private POSITION selectedPosition;
     private bool usesSelectedPosition;
+    private bool roleInitialized;
 
     public PlayerData PlayerData => playerData;
     public TeamSide TeamSide => playerData != null ? playerData.TeamSide : teamSide;
     public POSITION Position => usesSelectedPosition ? selectedPosition : GetDefaultPosition();
-    public PlayerStats Stats => playerData != null ? playerData.Stats : fallbackStats;
-
-    private void Awake()
+    private PlayerStats effectiveStats;
+    private int effectiveStatsVersion = -1;
+    public bool IsCareerPlayer
     {
+        get { EnsureRoleInitialized(); return usesSelectedPosition; }
+    }
+
+    public PlayerStats Stats
+    {
+        get
+        {
+            EnsureRoleInitialized();
+            if (!usesSelectedPosition) return playerData != null ? playerData.Stats : fallbackStats;
+            if (effectiveStats == null || effectiveStatsVersion != PlayerSaveManager.StateVersion)
+            {
+                PlayerStats baseStats = defaultStats != null ? defaultStats.Clone() : playerData.Stats.Clone();
+                PlayerSaveManager.LoadPlayerStats(playerData.PlayerName, baseStats);
+                PlayerStats calculated = EquipmentStatsService.GetEffectiveStats(baseStats);
+                if (effectiveStats == null) effectiveStats = calculated;
+                else effectiveStats.CopyFrom(calculated);
+                effectiveStatsVersion = PlayerSaveManager.StateVersion;
+            }
+            return effectiveStats;
+        }
+    }
+
+    private void Awake() => EnsureRoleInitialized();
+
+    private void EnsureRoleInitialized()
+    {
+        if (roleInitialized) return;
+        roleInitialized = true;
         selectedPosition = GetDefaultPosition();
         usesSelectedPosition = playerData != null
             && playerData.TeamSide == global::TeamSide.Player
@@ -26,13 +55,13 @@ public class CharacterRole : MonoBehaviour
         if (usesSelectedPosition && playerData.Stats != null)
         {
             defaultStats = playerData.Stats.Clone();
-            PlayerSaveManager.LoadPlayerStats(playerData);
             selectedPosition = PlayerSaveManager.LoadSelectedPosition(playerData.Position);
         }
     }
 
     public void ResetSavedStatsToDefault(POSITION newPosition)
     {
+        EnsureRoleInitialized();
         if (!usesSelectedPosition || playerData == null || defaultStats == null)
         {
             return;
@@ -45,6 +74,7 @@ public class CharacterRole : MonoBehaviour
 
     public void ResetSavedStatsToNewCareer(POSITION newPosition, PlayerStats startingStats)
     {
+        EnsureRoleInitialized();
         if (!usesSelectedPosition || playerData == null || playerData.Stats == null || startingStats == null)
         {
             return;

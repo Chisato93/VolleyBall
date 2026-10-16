@@ -93,6 +93,7 @@ public class ShopSalePanel : MonoBehaviour
         if (inventoryPanel.TryRemoveSaleItem(selected))
         {
             wallet.AddMoney(selected.SellPrice);
+            PlayerSaveManager.SaveCheckpoint();
             messageText.text = $"{selected.ItemName} 판매 완료! +{selected.SellPrice:N0}원";
         }
         else messageText.text = "아이템 목록이 바뀌었습니다. 다시 선택해 주세요.";

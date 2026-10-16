@@ -77,14 +77,14 @@ public class ItemTooltipUI : MonoBehaviour
                 AppendHeading(builder, "추가 옵션");
                 hasSection = true;
             }
-            builder.AppendLine(HighlightActive($"{GetProbabilityName(option.effectType)} +{option.percent}%", isEquipped));
+            builder.AppendLine(HighlightActive($"{ItemProbabilityBonus.GetEffectName(option.effectType)} +{option.percent}%", isEquipped));
             hasOptions = true;
         }
 
         hasSection = false;
         foreach (ItemSetEffect effect in item.SetEffects)
         {
-            if (effect == null || string.IsNullOrWhiteSpace(effect.description))
+            if (effect == null || string.IsNullOrWhiteSpace(effect.Description))
             {
                 continue;
             }
@@ -99,7 +99,7 @@ public class ItemTooltipUI : MonoBehaviour
             int equippedPieces = getSetPieceCount != null ? getSetPieceCount(effect.setName) : 0;
             bool isActive = isEquipped && equippedPieces >= requiredPieces;
             builder.AppendLine(HighlightActive($"{Escape(effect.setName)} ({equippedPieces}/{requiredPieces}개)", isActive));
-            builder.AppendLine(HighlightActive(Escape(effect.description), isActive));
+            builder.AppendLine(HighlightActive(Escape(effect.Description), isActive));
             hasOptions = true;
         }
 
@@ -137,18 +137,6 @@ public class ItemTooltipUI : MonoBehaviour
             case ItemCategory.Shoes: return "신발";
             case ItemCategory.Accessory: return "장신구";
             default: return "장비";
-        }
-    }
-
-    private static string GetProbabilityName(ItemProbabilityType type)
-    {
-        switch (type)
-        {
-            case ItemProbabilityType.AttackSuccess: return "공격 성공 확률";
-            case ItemProbabilityType.ServeSuccess: return "서브 성공 확률";
-            case ItemProbabilityType.ReceiveSuccess: return "리시브 성공 확률";
-            case ItemProbabilityType.BlockSuccess: return "블록 성공 확률";
-            default: return "성공 확률";
         }
     }
 

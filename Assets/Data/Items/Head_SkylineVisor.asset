@@ -30,6 +30,10 @@ MonoBehaviour:
   - setName: "스카이라인 세트"
     requiredPieces: 2
     description: "리시브 성공 확률 5% 증가"
+    effectType: 2
+    percent: 5
   - setName: "스카이라인 세트"
     requiredPieces: 4
     description: "토스 성공 확률 10% 증가"
+    effectType: 4
+    percent: 10

@@ -30,6 +30,10 @@ MonoBehaviour:
   - setName: "썬더 세트"
     requiredPieces: 2
     description: "서브 성공 확률 5% 증가"
+    effectType: 1
+    percent: 5
   - setName: "썬더 세트"
     requiredPieces: 4
     description: "공격 성공 확률 10% 증가"
+    effectType: 0
+    percent: 10

@@ -11,13 +11,26 @@ public class ItemStatBonus
     public int amount;
 }
 
-public enum ItemProbabilityType { AttackSuccess, ServeSuccess, ReceiveSuccess, BlockSuccess }
+public enum ItemProbabilityType { AttackSuccess, ServeSuccess, ReceiveSuccess, BlockSuccess, TossSuccess }
 
 [Serializable]
 public class ItemProbabilityBonus
 {
     public ItemProbabilityType effectType;
     public int percent;
+
+    public static string GetEffectName(ItemProbabilityType type)
+    {
+        switch (type)
+        {
+            case ItemProbabilityType.AttackSuccess: return "공격 성공 확률";
+            case ItemProbabilityType.ServeSuccess: return "서브 성공 확률";
+            case ItemProbabilityType.ReceiveSuccess: return "리시브 성공 확률";
+            case ItemProbabilityType.BlockSuccess: return "블록 성공 확률";
+            case ItemProbabilityType.TossSuccess: return "토스 성공 확률";
+            default: return "성공 확률";
+        }
+    }
 }
 
 [Serializable]
@@ -26,6 +39,9 @@ public class ItemSetEffect
     public string setName;
     [Min(1)] public int requiredPieces = 2;
     [TextArea] public string description;
+    public ItemProbabilityType effectType;
+    [Range(0, 100)] public int percent;
+    public string Description => percent > 0 ? $"{ItemProbabilityBonus.GetEffectName(effectType)} {percent}% 증가" : description;
 }
 
 [CreateAssetMenu(fileName = "ItemData", menuName = "Volleyball/Item Data")]
