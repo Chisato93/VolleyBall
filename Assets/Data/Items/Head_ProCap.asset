@@ -15,3 +15,11 @@ MonoBehaviour:
   itemName: Pro Cap
   category: 0
   icon: {fileID: 901857212, guid: 25b616fdead701c43812c6f769924b7b, type: 3}
+  statBonuses:
+  - statType: 5
+    amount: 2
+  - statType: 8
+    amount: 1
+  additionalOptions:
+  - "서브 성공 확률 5% 증가"
+  setEffects: []

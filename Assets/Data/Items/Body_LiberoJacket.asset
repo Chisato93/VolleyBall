@@ -15,3 +15,11 @@ MonoBehaviour:
   itemName: Libero Jacket
   category: 1
   icon: {fileID: -529347559, guid: 25b616fdead701c43812c6f769924b7b, type: 3}
+  statBonuses:
+  - statType: 2
+    amount: 3
+  - statType: 6
+    amount: 1
+  additionalOptions:
+  - "리시브 성공 확률 5% 증가"
+  setEffects: []

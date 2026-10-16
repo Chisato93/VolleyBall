@@ -15,3 +15,9 @@ MonoBehaviour:
   itemName: Power Wristband
   category: 3
   icon: {fileID: -797788048, guid: 25b616fdead701c43812c6f769924b7b, type: 3}
+  statBonuses:
+  - statType: 0
+    amount: 3
+  additionalOptions:
+  - "공격 성공 확률 5% 증가"
+  setEffects: []

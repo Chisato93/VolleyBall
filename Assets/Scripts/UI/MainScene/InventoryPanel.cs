@@ -9,12 +9,15 @@ public class InventoryPanel : TabContentPanel
     private static readonly Vector2 TooltipOffset = new Vector2(16f, -16f);
 
     [SerializeField] private Transform slotsParent;
+    [SerializeField] private Transform equipmentSlotsParent;
     [SerializeField] private InventoryItemUI itemPrefab;
     [SerializeField] private RectTransform tooltipPanel;
+    [SerializeField] private ItemTooltipUI tooltipView;
     [SerializeField] private RectTransform dragPreviewRoot;
     [SerializeField] private List<ItemData> ownedItems = new List<ItemData>();
 
     private readonly List<InventorySlotUI> slotList = new List<InventorySlotUI>();
+    private readonly List<InventorySlotUI> equipmentSlots = new List<InventorySlotUI>();
     private readonly List<ItemData> displayedItems = new List<ItemData>();
     private Canvas rootCanvas;
     private InventorySlotUI tooltipOwner;
@@ -24,12 +27,14 @@ public class InventoryPanel : TabContentPanel
     private int draggedItemOriginalSiblingIndex;
     private bool dragCompleted;
     private int currentTabIndex;
+    private readonly Vector3[] canvasCorners = new Vector3[4];
 
     public static InventoryPanel ActivePanel { get; private set; }
 
     private void Awake()
     {
         ActivePanel = this;
+        InitializeEquipmentSlots();
         EnsureSlots();
     }
 
@@ -45,6 +50,11 @@ public class InventoryPanel : TabContentPanel
     {
         ResetDisplayedItems();
         RenderCurrentTab();
+    }
+
+    private void OnDisable()
+    {
+        HideTooltip(null);
     }
 
     private void Update()
@@ -63,6 +73,7 @@ public class InventoryPanel : TabContentPanel
 
     private void RenderCurrentTab()
     {
+        HideTooltip(null);
         EnsureSlots();
         ApplyCurrentTabCategoryToSlots();
         ClearSlots();
@@ -214,6 +225,49 @@ public class InventoryPanel : TabContentPanel
         }
     }
 
+    private void InitializeEquipmentSlots()
+    {
+        equipmentSlots.Clear();
+        if (equipmentSlotsParent == null)
+        {
+            return;
+        }
+
+        equipmentSlots.AddRange(equipmentSlotsParent.GetComponentsInChildren<InventorySlotUI>(true));
+        foreach (InventorySlotUI slot in equipmentSlots)
+        {
+            slot.Initialize(this, true);
+        }
+    }
+
+    private int GetEquippedSetPieceCount(string setName)
+    {
+        if (string.IsNullOrWhiteSpace(setName))
+        {
+            return 0;
+        }
+
+        int count = 0;
+        foreach (InventorySlotUI slot in equipmentSlots)
+        {
+            if (slot == null || !slot.HasItem)
+            {
+                continue;
+            }
+
+            foreach (ItemSetEffect effect in slot.CurrentItemData.SetEffects)
+            {
+                if (effect != null && effect.setName == setName)
+                {
+                    count++;
+                    break;
+                }
+            }
+        }
+
+        return count;
+    }
+
     private void CacheExistingSlots()
     {
         slotList.Clear();
@@ -242,7 +296,7 @@ public class InventoryPanel : TabContentPanel
 
     public void ShowTooltip(InventorySlotUI slot, Vector2 screenPosition)
     {
-        if (slot == null || !slot.HasItem)
+        if (slot == null || !slot.HasItem || dragSourceSlot != null)
         {
             return;
         }
@@ -252,39 +306,76 @@ public class InventoryPanel : TabContentPanel
             return;
         }
 
-        tooltipOwner = slot;
         ResolveRootCanvas();
+        if (tooltipView == null)
+        {
+            tooltipView = tooltipPanel.GetComponent<ItemTooltipUI>();
+        }
+
+        if (tooltipView == null || !TryGetTooltipBounds(out Rect bounds))
+        {
+            return;
+        }
+
+        tooltipOwner = slot;
+        RectTransform parent = (RectTransform)tooltipPanel.parent;
+        tooltipPanel.anchorMin = parent.pivot;
+        tooltipPanel.anchorMax = parent.pivot;
+        tooltipPanel.pivot = new Vector2(0f, 1f);
+        tooltipPanel.SetAsLastSibling();
         tooltipPanel.gameObject.SetActive(true);
+        tooltipView.SetItem(slot.CurrentItemData,
+            new Vector2(Mathf.Max(1f, bounds.width - 16f), Mathf.Max(1f, bounds.height - 16f)),
+            slot.IsEquipmentSlot, GetEquippedSetPieceCount);
         MoveTooltip(screenPosition);
     }
 
     public void MoveTooltip(Vector2 screenPosition)
     {
-        if (tooltipPanel == null || rootCanvas == null)
+        if (tooltipPanel == null || !tooltipPanel.gameObject.activeSelf || !TryGetTooltipBounds(out Rect bounds))
         {
-            return;
-        }
-
-        RectTransform canvasTransform = rootCanvas.transform as RectTransform;
-        if (canvasTransform == null)
-        {
-            tooltipPanel.position = screenPosition + TooltipOffset;
             return;
         }
 
         Vector2 localPosition;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasTransform,
+            (RectTransform)tooltipPanel.parent,
             screenPosition + TooltipOffset,
             rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera,
             out localPosition);
 
+        Vector2 size = tooltipPanel.rect.size;
+        localPosition.x = Mathf.Clamp(localPosition.x, bounds.xMin + 8f, bounds.xMax - size.x - 8f);
+        localPosition.y = Mathf.Clamp(localPosition.y, bounds.yMin + size.y + 8f, bounds.yMax - 8f);
         tooltipPanel.anchoredPosition = localPosition;
+    }
+
+    private bool TryGetTooltipBounds(out Rect bounds)
+    {
+        bounds = default;
+        if (tooltipPanel == null || !(tooltipPanel.parent is RectTransform parent)
+            || !(ResolveRootCanvas()?.transform is RectTransform canvas))
+        {
+            return false;
+        }
+
+        canvas.GetWorldCorners(canvasCorners);
+        Vector2 minimum = parent.InverseTransformPoint(canvasCorners[0]);
+        Vector2 maximum = minimum;
+        for (int i = 1; i < canvasCorners.Length; i++)
+        {
+            Vector2 point = parent.InverseTransformPoint(canvasCorners[i]);
+            minimum = Vector2.Min(minimum, point);
+            maximum = Vector2.Max(maximum, point);
+        }
+
+        bounds = Rect.MinMaxRect(minimum.x, minimum.y, maximum.x, maximum.y);
+        return true;
     }
 
     public void HideTooltip(InventorySlotUI slot)
     {
-        if (tooltipOwner != null && tooltipOwner != slot)
+        if (slot != null && tooltipOwner != null && tooltipOwner != slot)
         {
             return;
         }

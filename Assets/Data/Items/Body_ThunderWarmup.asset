@@ -15,3 +15,16 @@ MonoBehaviour:
   itemName: Thunder Warmup
   category: 1
   icon: {fileID: -305617240, guid: 25b616fdead701c43812c6f769924b7b, type: 3}
+  statBonuses:
+  - statType: 0
+    amount: 3
+  - statType: 7
+    amount: 1
+  additionalOptions: []
+  setEffects:
+  - setName: "썬더 세트"
+    requiredPieces: 2
+    description: "서브 성공 확률 5% 증가"
+  - setName: "썬더 세트"
+    requiredPieces: 4
+    description: "공격 성공 확률 10% 증가"

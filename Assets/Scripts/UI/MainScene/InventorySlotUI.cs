@@ -13,10 +13,17 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public ItemData CurrentItemData => currentItemData;
     public bool HasItem => currentItemData != null;
+    public bool IsEquipmentSlot { get; private set; }
 
-    public void Initialize(InventoryPanel panel)
+    private void OnDisable()
+    {
+        ownerPanel?.HideTooltip(this);
+    }
+
+    public void Initialize(InventoryPanel panel, bool isEquipmentSlot = false)
     {
         ownerPanel = panel;
+        IsEquipmentSlot = isEquipmentSlot;
     }
 
     public bool CanAccept(ItemData item)

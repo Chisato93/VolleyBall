@@ -15,3 +15,17 @@ MonoBehaviour:
   itemName: Thunder Bandana
   category: 0
   icon: {fileID: 423188702, guid: 25b616fdead701c43812c6f769924b7b, type: 3}
+  statBonuses:
+  - statType: 0
+    amount: 2
+  - statType: 5
+    amount: 2
+  additionalOptions:
+  - "서브 성공 확률 10% 증가"
+  setEffects:
+  - setName: "썬더 세트"
+    requiredPieces: 2
+    description: "서브 성공 확률 5% 증가"
+  - setName: "썬더 세트"
+    requiredPieces: 4
+    description: "공격 성공 확률 10% 증가"
